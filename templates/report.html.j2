@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Report</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- My existing CSS -->
+  <link rel="stylesheet" href="../static/style.css">
+
+  <style>
+    .sticky-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="paper rounded-xl font-sans">
+    <!-- Centered page title -->
+    <div class="flex flex-col items-center justify-center mt-4 mb-8 w-full">
+      <div class="bg-blue-200 text-white rounded-xl px-10 py-8 max-w-4xl w-full text-center">
+        <h1 class="text-5xl font-bold text-gray-800">16S Report</h1>
+      </div>
+    </div>
+
+        <!-- Info section -->
+    <div class="max-w-4xl mx-auto mb-10 bg-white rounded-lg shadow p-6">
+      <div class="w-full text-sm">
+        <!-- Row 1 -->
+        <div class="flex w-full">
+          <div><strong>Sample Name</strong>: {{ sample_name }}</div>
+          <div class="ml-auto min-w-[20rem]"><strong>Run</strong>: {{ input_dir }}</div>
+        </div>
+        <!-- Row 2 -->
+        <div class="flex w-full mt-3">
+          <div><strong>Date</strong>: {{ today }}</div>
+          <div class="ml-auto min-w-[20rem]"><strong>Pipeline version</strong>: TRANA v{{ pipeline_version }}</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="text-2xl font-semibold mb-10 mb-2">Summary Statistics</h2>
+    <div class="flex gap-6">
+      <div class="w-3/5">
+        <table class="overflow-x-auto">
+          <tbody>
+              <tr class="bg-slate-50">
+                  <td class="font-semibold">Number of reads</td>
+                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Number of reads_fastq"] }}</td>
+              </tr>
+              <tr class="bg-white">
+                  <td class="font-semibold">Mean Read Length</td>
+                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Mean read length_fastq"] }} bp</td>
+              </tr>
+              <tr class="bg-slate-50">
+                  <td class="font-semibold">Mean Read Quality</td>
+                  <td class="
+                    {% set qmean = multiqc_data['report_general_stats_data'][0][sample_name ~ "_nanoplot_processed"]['Mean read quality_fastq'] %}
+                    {% if qmean < 20 %}
+                      bg-red-200 text-red-800
+                    {% elif qmean <= 30 %}
+                      bg-yellow-200 text-yellow-800
+                    {% else %}
+                      bg-green-200 text-green-800
+                    {% endif %} ">
+                    {{ qmean }}
+              </tr>
+              <tr class="bg-white">
+                  <td class="font-semibold">Median Read Length</td>
+                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Median read length_fastq"] }} bp</td>
+              </tr>
+              <tr class="bg-slate-50">
+                  <td class="font-semibold">Median Read Quality</td>
+                  <td class="
+                    {% set qmedian = multiqc_data['report_general_stats_data'][0][sample_name ~ "_nanoplot_processed"]['Median read quality_fastq'] %}
+                    {% if qmedian < 20 %}
+                      bg-red-200 text-red-800
+                    {% elif qmedian <= 30 %}
+                      bg-yellow-200 text-yellow-800
+                    {% else %}
+                      bg-green-200 text-green-800
+                    {% endif %} ">
+                    {{ qmedian }}
+              </tr>
+              <tr class="bg-white">
+                  <td class="font-semibold">Read Length N50</td>
+                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Read length N50_fastq"] }} bp</td>
+              </tr>
+              <tr class="bg-slate-50">
+                  <td class="font-semibold">STDEV Read Length</td>
+                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["STDEV read length_fastq"] }} bp</td>
+              </tr>
+              <tr class="bg-white">
+                  <td class="font-semibold">Total Bases</td>
+                  <td>{{ (multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Total bases_fastq"] / 1_000_000)|round(1) }} Mbp</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="w-2/5 p-4 text-xs text-center">
+        <h3 class="font-semibold mb-2">Phred Quality Score (Q)</h3>
+
+        <ul class="mb-3 space-y-1">
+          <li>Q10: 10% error rate</li>
+          <li>Q20: 1% error rate</li>
+          <li>Q30: 0.1% error rate</li>
+          <li>Q40: 0.01% error rate</li>
+        </ul>
+
+        <!-- Quality scale -->
+        <div class="flex text-center text-xs font-semibold rounded overflow-hidden">
+
+          <div class="w-1/3 bg-red-200 text-black py-2">
+            &lt; Q20<br/>Bad
+          </div>
+
+          <div class="w-1/3 bg-yellow-200 text-black py-2">
+            Q20–Q30<br/>Acceptable
+          </div>
+
+          <div class="w-1/3 bg-green-200 text-black py-2">
+            &gt; Q30<br/>Good
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <h2 class="text-2xl font-semibold mt-5 mb-2">Abundance</h2>
+    <p class="text-base font-semibold">{{ sample_name }}</p>
+    <div class="sticky-table overflow-hidden">
+      <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
+        {{ table | safe }}
+      </div>
+        {{ legend }}
+    </div>
+    <p class="text-base font-semibold mt-2">Negative control</p>
+    <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
+      {{ neg_control_table | safe }}
+    </div>
+      {{ legend_neg }}
+
+    <h2 class="text-2xl font-semibold mt-8 mb-2">Figures</h2>
+    <div class="flex gap-2">
+      {% for img in images %}
+        <div class="mb-2">
+          <p class="text-center font-bold">
+            {% if loop.index0 % 2 == 0 %}
+              Unprocessed
+            {% else %}
+              Processed
+            {% endif %}
+          </p>
+          <img src="data:image/png;base64,{{ img }}" class="w-full">
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</body>
+</html>
