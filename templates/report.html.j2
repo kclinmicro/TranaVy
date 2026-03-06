@@ -19,27 +19,24 @@
   </style>
 </head>
 <body>
-  <div class="paper rounded-xl font-sans">
+  <div class="bg-white w-[1200px] p-10 shadow-lg border border-gray-300 leading-relaxed mb-10 rounded-xl font-sans">
+  <!--<div class="paper rounded-xl font-sans">-->
     <!-- Centered page title -->
     <div class="flex flex-col items-center justify-center mt-4 mb-8 w-full">
-      <div class="bg-blue-200 text-white rounded-xl px-10 py-8 max-w-4xl w-full text-center">
-        <h1 class="text-5xl font-bold text-gray-800">16S Report</h1>
+      <div class="bg-blue-200 text-white rounded-xl px-10 py-8 w-full text-center">
+        <h1 class="text-6xl font-bold text-gray-800">16S Report</h1>
       </div>
     </div>
 
         <!-- Info section -->
-    <div class="max-w-4xl mx-auto mb-10 bg-white rounded-lg shadow p-6">
-      <div class="w-full text-sm">
+    <div class="mx-auto mb-10 bg-white rounded-lg shadow p-6">
+      <div class="w-full text-base grid gap-y-3" style="grid-template-columns: 1fr auto;">
         <!-- Row 1 -->
-        <div class="flex w-full">
-          <div><strong>Sample Name</strong>: {{ sample_name }}</div>
-          <div class="ml-auto min-w-[20rem]"><strong>Run</strong>: {{ input_dir }}</div>
-        </div>
+        <div><strong>Sample Name</strong>: {{ sample_name }}</div>
+        <div class="pl-8"><strong>Run</strong>: {{ input_dir }}</div>
         <!-- Row 2 -->
-        <div class="flex w-full mt-3">
-          <div><strong>Date</strong>: {{ today }}</div>
-          <div class="ml-auto min-w-[20rem]"><strong>Pipeline version</strong>: TRANA v{{ pipeline_version }}</div>
-        </div>
+        <div><strong>Date</strong>: {{ today }}</div>
+        <div class="pl-8"><strong>Pipeline version</strong>: TRANA v{{ pipeline_version }}</div>
       </div>
     </div>
 
