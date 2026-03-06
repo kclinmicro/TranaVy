@@ -143,27 +143,11 @@
       </div>
         {{ legend }}
     </div>
-    <p class="text-base font-semibold mt-2">Negative control</p>
+    <p class="text-base font-semibold mt-5">Negative control</p>
     <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
       {{ neg_control_table | safe }}
     </div>
       {{ legend_neg }}
-
-    <h2 class="text-2xl font-semibold mt-8 mb-2">Figures</h2>
-    <div class="flex gap-2">
-      {% for img in images %}
-        <div class="mb-2">
-          <p class="text-center font-bold">
-            {% if loop.index0 % 2 == 0 %}
-              Unprocessed
-            {% else %}
-              Processed
-            {% endif %}
-          </p>
-          <img src="data:image/png;base64,{{ img }}" class="w-full">
-        </div>
-      {% endfor %}
-    </div>
 
   </div>
 </body>
