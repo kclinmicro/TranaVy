@@ -31,41 +31,77 @@ def main():
     # Load neg control abundance table
     neg_control_abundance = pd.read_csv(f"{input_dir}/results/{neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             # Filter for wanted columns
-    neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:].append(neg_control_filtered.columns[:1])]  # Move the first column (taxid) to the end
+    neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]                                           # Move the first column (taxid)
+    .append(neg_control_filtered.columns[:1])
+    .append(neg_control_filtered.columns[5:])] 
+    neg_control_switched = neg_control_switched.rename(                                                                     # Rename col names
+        columns={
+            "estimated counts": "estimated read counts",
+            "tax_id": "tax id"
+        }
+    )
     neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)                                 # Sort based on descending abundance
     neg_control_ordered = neg_control_ordered.reset_index(drop=True)                                                        # Re-index the table
 
     # Load sample abundance table
     abundance = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
+    abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]                                                           # Filter for wanted columns
+    abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]                                                 # Move the first column (taxid)
+    .append(abundance_filtered.columns[:1])
+    .append(abundance_filtered.columns[5:])]
+    abundance_switched = abundance_switched.rename(                                                                         # Rename col names
+        columns={
+            "estimated counts": "estimated read counts",
+            "tax_id": "tax id"
+        }
+    )
+    abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)                                     # Sort based on descending abundance
+    abundance_ordered = abundance_ordered.reset_index(drop=True)                                                            # Re-index the table
+    
     abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")                             # Merge abundance and assignment
     
     # Spike species
     highlight = {"Truepera radiovictrix", "Imtechella halotolerans", "Allobacillus halotolerans"}
-    #highlight = {"Aquabacterium parvum", "Bradyrhizobium embrapense"}
     
-    def highlight_species(row):
+    def highlight_species(row):                                                                                             # Define function for spike species
         if row["species"] in highlight:
             return ["background-color: #ddd6fe"] * len(row)
         return [""] * len(row)
         
-    def unique_species(row):
+    def unique_species(row):                                                                                                # Define function for unique species not found in negative control
         if row["species"] not in neg_control_ordered["species"].values:
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
 
-    styled_1 = ordered_abundance.style.apply(unique_species, axis=1)
-    styled = styled_1.apply(highlight_species, axis=1)
-    neg_control_styled = neg_control_ordered.style.apply(highlight_species, axis=1)
+        # If species exists in neg_control
+        if not match.empty:
+            neg_abundance = match["abundance"].values[0]
 
-    html_table = styled.to_html(index=False, border=0)
-    neg_control_html_table = styled.to_html(index=False, border=0)
+            if row["abundance"] >= 100 * neg_abundance:
+                return ["background-color: #dbeafe"] * len(row)
+
+        return [""] * len(row)
+
+    styled_abundance = (abundance_assignment.style                                                                          # Apply functions for spike species and unique species
+        .apply(unique_species, axis=1)
+        .apply(highlight_species, axis=1)
+        .format({"estimated read counts": "{:.0f}"})
+    )
+    html_table = styled_abundance.to_html(index=False, border=0)                                                            # Convert to html table
+
+    styled_neg_control = (neg_control_ordered.style
+        .apply(highlight_species, axis=1)                                                                                   # Apply function for spike species
+        .format({"estimated read counts": "{:.0f}"})
+    )
+    neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              # Convert to html table
 
     legend_html = """
     <p class="text-gray-700 italic mt-2">
         <span class="inline-block w-4 h-4 bg-purple-200 mr-2 border"></span>
         Purple rows indicate spike species
-        <span class="inline-block w-4 h-4 bg-green-100 ml-6 mr-2 border"></span>
-        Green rows indicate species not found in negative control
+        <span class="inline-block w-4 h-4 bg-green-100 ml-14 mr-2 border"></span>
+        Green rows indicate species not found in negative control<br>
+        <span class="not-italic text-sm"><span class="font-bold text-black">median*/mean*</span>: Median/Mean probability of the assigned taxon</span>
     </p>
     """
 
@@ -76,18 +112,10 @@ def main():
     </p>
     """
 
-    # Function to encode PNG to Base64
-    def img_to_base64(path):
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-    
-    image_files = [f"{input_dir}/nanoplot_unprocessed/{sample_name}_nanoplot_unprocessed_LengthvsQualityScatterPlot_dot.png", f"{input_dir}/nanoplot_processed/{sample_name}_nanoplot_processed_LengthvsQualityScatterPlot_dot.png"]
-
-    # Convert all images to Base64 strings
-    images_base64 = [img_to_base64(path) for path in image_files]
-
+    # Save date
     today = date.today().strftime("%Y-%m-%d")
-
+    
+    # Load software version
     with open(f"{input_dir}/pipeline_info/software_versions.yml") as v:
         software_versions = yaml.safe_load(v)
 
@@ -98,14 +126,13 @@ def main():
     trana_version = software_versions["Workflow"]["genomic-medicine-sweden/TRANA"]
 
     html = template.render(
-        table = styled.to_html(index=False),
-        neg_control_table = neg_control_styled.to_html(index=False),
+        table = html_table,
+        neg_control_table = neg_control_html_table,
         legend = legend_html,
         legend_neg = legend_neg_html,
         today = today,
         pipeline_version = trana_version,
         multiqc_data  = multiqc_data,
-        images = images_base64,
         input_dir = input_dir,
         sample_name = sample_name,
         neg_control = neg_control
