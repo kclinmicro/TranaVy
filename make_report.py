@@ -21,6 +21,13 @@ def main():
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("report.html.j2")
 
+    #Load sample read assignment table
+    assignment = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_read-assignment-distributions.tsv", sep="\t")
+    assignment_filtered = assignment.iloc[:, 1:]                                                                            # Select all columns except the first one
+    assignment_summary = assignment_filtered.agg(['median', 'mean']).T.reset_index()                                        # Compute mean and median for each column    
+    assignment_summary.columns = ['tax id', 'median*', 'mean*']                                                             # Rename columns
+
+
     # Load neg control abundance table
     neg_control_abundance = pd.read_csv(f"{input_dir}/results/{neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             # Filter for wanted columns
@@ -30,11 +37,8 @@ def main():
 
     # Load sample abundance table
     abundance = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
-    filtered_abundance = abundance.iloc[:, list(range(5)) + [13]]                                                       # Filter for wanted columns
-    switched_abundance = filtered_abundance[filtered_abundance.columns[1:].append(filtered_abundance.columns[:1])]      # Move the first column (taxid) to the end
-    ordered_abundance = switched_abundance.sort_values(by="abundance", ascending=False)                                 # Sort based on descending abundance
-    ordered_abundance = ordered_abundance.reset_index(drop=True)                                                        # Re-index the table
-
+    abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")                             # Merge abundance and assignment
+    
     # Spike species
     highlight = {"Truepera radiovictrix", "Imtechella halotolerans", "Allobacillus halotolerans"}
     #highlight = {"Aquabacterium parvum", "Bradyrhizobium embrapense"}
