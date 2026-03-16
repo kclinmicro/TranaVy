@@ -23,73 +23,93 @@ def main():
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("report.html.j2")
 
-    #Load sample read assignment table
+    # Load sample read assignment table
     assignment = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_read-assignment-distributions.tsv", sep="\t")
-    assignment_filtered = assignment.iloc[:, 1:]                                                                            # Select all columns except the first one
-    assignment_summary = assignment_filtered.agg(['median', 'mean']).T.reset_index()                                        # Compute mean and median for each column    
-    assignment_summary.columns = ['tax id', 'median*', 'mean*']                                                             # Rename columns
+    # Select all columns except the first one
+    assignment_filtered = assignment.iloc[:, 1:]                                                                            
+    # Compute mean and median for each column
+    assignment_summary = assignment_filtered.agg(['median', 'mean']).T.reset_index()                                            
+    # Rename columns
+    assignment_summary.columns = ['tax id', 'median*', 'mean*']                                                             
 
 
     # Load neg control abundance table
     neg_control_abundance = pd.read_csv(f"{input_dir}/results/{neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
-    neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             # Filter for wanted columns
-    neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]                                           # Move the first column (taxid)
+    # Filter for wanted columns
+    neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             
+    # Move the first column (taxid)
+    neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]                                           
         .append(neg_control_filtered.columns[:1])
         .append(neg_control_filtered.columns[5:])] 
-    neg_control_switched = neg_control_switched.rename(                                                                     # Rename col names
+    # Rename col names
+    neg_control_switched = neg_control_switched.rename(                                                                     
         columns={
             "estimated counts": "estimated read counts",
             "tax_id": "tax id"
         }
     )
-    neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)                                 # Sort based on descending abundance
-    neg_control_ordered = neg_control_ordered.reset_index(drop=True)                                                        # Re-index the table
+    # Sort based on descending abundance
+    neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)                                 
+    # Re-index the table
+    neg_control_ordered = neg_control_ordered.reset_index(drop=True)                                                        
 
     # Load sample abundance table
     abundance = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
-    abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]                                                           # Filter for wanted columns
-    abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]                                                 # Move the first column (taxid)
+    # Filter for wanted columns
+    abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]                                                           
+    # Move the first column (taxid)
+    abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]                                                 
         .append(abundance_filtered.columns[:1])
         .append(abundance_filtered.columns[5:])]
-    abundance_switched = abundance_switched.rename(                                                                         # Rename col names
+    # Rename col names
+    abundance_switched = abundance_switched.rename(                                                                         
         columns={
             "estimated counts": "estimated read counts",
             "tax_id": "tax id"
         }
     )
-    abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)                                     # Sort based on descending abundance
-    abundance_ordered = abundance_ordered.reset_index(drop=True)                                                            # Re-index the table
+    # Sort based on descending abundance
+    abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)                                     
+    # Re-index the table
+    abundance_ordered = abundance_ordered.reset_index(drop=True)                                                            
     
-    abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")                             # Merge abundance and assignment
+    # Merge abundance and assignment
+    abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")                             
     
     # Spike species
-    with open(args.config, "rb") as f:  # Note: must be opened in binary mode
+    with open(args.config, "rb") as f:
         config = tomllib.load(f)
 
     highlight = set(config.get("spike_species", []))
     
-    def highlight_species(row):                                                                                             # Define function for spike species
+    # Define function for spike species
+    def highlight_species(row):                                                                                             
         if row["species"] in highlight:
             return ["background-color: #ddd6fe"] * len(row)
         return [""] * len(row)
         
-    def unique_species(row):                                                                                                # Define function for unique species not found in negative control
+    # Define function for unique species not found in negative control
+    def unique_species(row):
         if row["species"] not in neg_control_ordered["species"].values:
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
 
-    styled_abundance = (abundance_assignment.style                                                                          # Apply functions for spike species and unique species
+    # Apply functions for spike species and unique species
+    styled_abundance = (abundance_assignment.style                                                                          
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
         .format({"estimated read counts": "{:.0f}"})
     )
-    html_table = styled_abundance.to_html(index=False, border=0)                                                            # Convert to html table
+    # Convert to html table
+    html_table = styled_abundance.to_html(index=False, border=0)                                                            
 
+    # Apply function for spike species
     styled_neg_control = (neg_control_ordered.style
-        .apply(highlight_species, axis=1)                                                                                   # Apply function for spike species
+        .apply(highlight_species, axis=1)                                                                                   
         .format({"estimated read counts": "{:.0f}"})
     )
-    neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              # Convert to html table
+    # Convert to html table
+    neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              
 
     legend_html = """
     <p class="text-gray-700 italic mt-2">
