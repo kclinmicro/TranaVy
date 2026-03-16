@@ -5,18 +5,18 @@ import yaml
 import json
 import base64
 import argparse
+import tomllib
 
 def main():
     argp = argparse.ArgumentParser()
-    argp.add_argument("--input_dir", "-i", type=str, required=True)
-    argp.add_argument("--sample_name", "-s", type=str, required=True)
-    argp.add_argument("--neg_control", "-n", type=str, required=True)
+    argp.add_argument("--config", "-c", type=str, default="configs/config.toml", help="Path to config file")
 
     args = argp.parse_args()
 
     input_dir = args.input_dir
     sample_name = args.sample_name
     neg_control = args.neg_control
+    config_path = args.config
 
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("report.html.j2")
@@ -61,7 +61,10 @@ def main():
     abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")                             # Merge abundance and assignment
     
     # Spike species
-    highlight = {"Truepera radiovictrix", "Imtechella halotolerans", "Allobacillus halotolerans"}
+    with open(args.config, "rb") as f:  # Note: must be opened in binary mode
+        config = tomllib.load(f)
+
+    highlight = set(config.get("spike_species", []))
     
     def highlight_species(row):                                                                                             # Define function for spike species
         if row["species"] in highlight:
