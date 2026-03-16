@@ -3,12 +3,14 @@ import pandas as pd
 from datetime import date
 import yaml
 import json
-import base64
 import argparse
 import tomllib
 
 def main():
     argp = argparse.ArgumentParser()
+    argp.add_argument("--input_dir", "-i", type=str, required=True, help="Path to the input directory containing results")
+    argp.add_argument("--sample_name", "-s", type=str, required=True, help="Name of the sample")
+    argp.add_argument("--neg_control", "-n", type=str, required=True, help="Name of the negative control")
     argp.add_argument("--config", "-c", type=str, default="configs/config.toml", help="Path to config file")
 
     args = argp.parse_args()
@@ -76,15 +78,6 @@ def main():
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
 
-        # If species exists in neg_control
-        if not match.empty:
-            neg_abundance = match["abundance"].values[0]
-
-            if row["abundance"] >= 100 * neg_abundance:
-                return ["background-color: #dbeafe"] * len(row)
-
-        return [""] * len(row)
-
     styled_abundance = (abundance_assignment.style                                                                          # Apply functions for spike species and unique species
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
@@ -104,7 +97,7 @@ def main():
         Purple rows indicate spike species
         <span class="inline-block w-4 h-4 bg-green-100 ml-14 mr-2 border"></span>
         Green rows indicate species not found in negative control<br>
-        <span class="not-italic text-sm"><span class="font-bold text-black">median*/mean*</span>: Median/Mean probability of the assigned taxon</span>
+        <span class="not-italic text-sm"><span class="font-bold text-black">median*/mean*</span>: Median/Mean probability of the assigned taxon across reads</span>
     </p>
     """
 

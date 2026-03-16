@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Report</title>
@@ -24,11 +25,11 @@
     <!-- Centered page title -->
     <div class="flex flex-col items-center justify-center mt-4 mb-8 w-full">
       <div class="bg-blue-200 text-white rounded-xl px-10 py-8 w-full text-center">
-        <h1 class="text-6xl font-bold text-gray-800">16S Report</h1>
+        <h1 class="text-6xl font-bold text-gray-800">16S TRANA Report</h1>
       </div>
     </div>
 
-        <!-- Info section -->
+    <!-- Info section -->
     <div class="mx-auto mb-10 bg-white rounded-lg shadow p-6">
       <div class="w-full text-base grid gap-y-3" style="grid-template-columns: 1fr auto;">
         <!-- Row 1 -->
@@ -67,37 +68,39 @@
                       bg-green-400 text-green-800
                     {% endif %} ">
                     {{ qmean }}
+                  </td>
               </tr>
               <tr class="bg-white">
                   <td class="font-semibold">Median Read Length</td>
                   <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Median read length_fastq"] }} bp</td>
               </tr>
               <tr class="bg-slate-50">
-                  <td class="font-semibold">Median Read Quality</td>
-                  <td class="
-                    {% set qmedian = multiqc_data['report_general_stats_data'][0][sample_name ~ "_nanoplot_processed"]['Median read quality_fastq'] %}
-                    {% if qmedian < 15 %}
-                      bg-red-200 text-red-800
-                    {% elif qmedian < 20 %}
-                      bg-yellow-200 text-yellow-800
-                    {% elif median < 30 %}
-                      bg-green-200 text-green-800
-                    {% else %}
-                      bg-green-400 text-green-800
-                    {% endif %} ">
-                    {{ qmedian }}
+                <td class="font-semibold">Median Read Quality</td>
+                <td class="
+                  {% set qmedian = multiqc_data['report_general_stats_data'][0][sample_name ~ "_nanoplot_processed"]['Median read quality_fastq'] %}
+                  {% if qmedian < 15 %}
+                    bg-red-200 text-red-800
+                  {% elif qmedian < 20 %}
+                    bg-yellow-200 text-yellow-800
+                  {% elif median < 30 %}
+                    bg-green-200 text-green-800
+                  {% else %}
+                    bg-green-400 text-green-800
+                  {% endif %} ">
+                  {{ qmedian }}
+                  </td>
               </tr>
               <tr class="bg-white">
-                  <td class="font-semibold">Read Length N50</td>
-                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Read length N50_fastq"] }} bp</td>
+                <td class="font-semibold">Read Length N50</td>
+                <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Read length N50_fastq"] }} bp</td>
               </tr>
               <tr class="bg-slate-50">
-                  <td class="font-semibold">STDEV Read Length</td>
-                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["STDEV read length_fastq"] }} bp</td>
+                <td class="font-semibold">STDEV Read Length</td>
+                <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["STDEV read length_fastq"] }} bp</td>
               </tr>
               <tr class="bg-white">
-                  <td class="font-semibold">Total Bases</td>
-                  <td>{{ (multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Total bases_fastq"] / 1_000_000)|round(1) }} Mbp</td>
+                <td class="font-semibold">Total Bases</td>
+                <td>{{ (multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Total bases_fastq"] / 1_000_000)|round(1) }} Mbp</td>
               </tr>
           </tbody>
         </table>
@@ -138,13 +141,13 @@
       <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
         {{ table | safe }}
       </div>
-        {{ legend }}
+      {{ legend }}
     </div>
     <p class="text-base font-semibold mt-5">Negative control</p>
     <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
       {{ neg_control_table | safe }}
     </div>
-      {{ legend_neg }}
+    {{ legend_neg }}
 
   </div>
 </body>
