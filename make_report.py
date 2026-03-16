@@ -32,8 +32,8 @@ def main():
     neg_control_abundance = pd.read_csv(f"{input_dir}/results/{neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             # Filter for wanted columns
     neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]                                           # Move the first column (taxid)
-    .append(neg_control_filtered.columns[:1])
-    .append(neg_control_filtered.columns[5:])] 
+        .append(neg_control_filtered.columns[:1])
+        .append(neg_control_filtered.columns[5:])] 
     neg_control_switched = neg_control_switched.rename(                                                                     # Rename col names
         columns={
             "estimated counts": "estimated read counts",
@@ -47,8 +47,8 @@ def main():
     abundance = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]                                                           # Filter for wanted columns
     abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]                                                 # Move the first column (taxid)
-    .append(abundance_filtered.columns[:1])
-    .append(abundance_filtered.columns[5:])]
+        .append(abundance_filtered.columns[:1])
+        .append(abundance_filtered.columns[5:])]
     abundance_switched = abundance_switched.rename(                                                                         # Rename col names
         columns={
             "estimated counts": "estimated read counts",
