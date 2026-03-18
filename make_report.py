@@ -15,16 +15,11 @@ def main():
 
     args = argp.parse_args()
 
-    input_dir = args.input_dir
-    sample_name = args.sample_name
-    neg_control = args.neg_control
-    config_path = args.config
-
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("report.html.j2")
 
     # Load sample read assignment table
-    assignment = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_read-assignment-distributions.tsv", sep="\t")
+    assignment = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_read-assignment-distributions.tsv", sep="\t")
     # Select all columns except the first one
     assignment_filtered = assignment.iloc[:, 1:]                                                                            
     # Compute mean and median for each column
@@ -34,7 +29,7 @@ def main():
 
 
     # Load neg control abundance table
-    neg_control_abundance = pd.read_csv(f"{input_dir}/results/{neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
+    neg_control_abundance = pd.read_csv(f"{args.input_dir}/results/{args.neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
     neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             
     # Move the first column (taxid)
@@ -54,7 +49,7 @@ def main():
     neg_control_ordered = neg_control_ordered.reset_index(drop=True)                                                        
 
     # Load sample abundance table
-    abundance = pd.read_csv(f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
+    abundance = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
     abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]                                                           
     # Move the first column (taxid)
@@ -132,11 +127,11 @@ def main():
     today = date.today().strftime("%Y-%m-%d")
     
     # Load software version
-    with open(f"{input_dir}/pipeline_info/software_versions.yml") as v:
+    with open(f"{args.input_dir}/pipeline_info/software_versions.yml") as v:
         software_versions = yaml.safe_load(v)
 
     # Load MultiQC JSON
-    with open(f"{input_dir}/multiqc/multiqc_data/multiqc_data.json") as f:
+    with open(f"{args.input_dir}/multiqc/multiqc_data/multiqc_data.json") as f:
         multiqc_data = json.load(f)
 
     trana_version = software_versions["Workflow"]["genomic-medicine-sweden/TRANA"]
@@ -149,9 +144,9 @@ def main():
         today = today,
         pipeline_version = trana_version,
         multiqc_data  = multiqc_data,
-        input_dir = input_dir,
-        sample_name = sample_name,
-        neg_control = neg_control
+        input_dir = args.input_dir,
+        sample_name = args.sample_name,
+        neg_control = args.neg_control
     )
 
     with open("output/report.html", "w") as f:
