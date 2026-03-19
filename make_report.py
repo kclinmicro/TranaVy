@@ -9,6 +9,7 @@ import tomllib
 def main():
     argp = argparse.ArgumentParser()
     argp.add_argument("--input_dir", "-i", type=str, required=True, help="Path to the input directory containing results")
+    argp.add_argument("--output_file", "-o", type=str, required=True, help="Path to the output report file")
     argp.add_argument("--sample_name", "-s", type=str, required=True, help="Name of the sample")
     argp.add_argument("--neg_control", "-n", type=str, required=True, help="Name of the negative control")
     argp.add_argument("--config", "-c", type=str, default="configs/config.toml", help="Path to config file")
@@ -149,7 +150,7 @@ def main():
         neg_control = args.neg_control
     )
 
-    with open("output/report.html", "w") as f:
+    with open(args.output_file, "w") as f:
         f.write(html)
 
 if __name__ == "__main__":
