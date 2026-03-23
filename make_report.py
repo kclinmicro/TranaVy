@@ -16,6 +16,10 @@ def main():
 
     args = argp.parse_args()
 
+    # Read CSS file content
+    with open("static/style.css", "r") as f:
+        css_content = f.read()
+
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("report.html.j2")
 
@@ -138,6 +142,7 @@ def main():
     trana_version = software_versions["Workflow"]["genomic-medicine-sweden/TRANA"]
 
     html = template.render(
+        css = css_content,
         table = html_table,
         neg_control_table = neg_control_html_table,
         legend = legend_html,
