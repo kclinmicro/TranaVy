@@ -1,4 +1,4 @@
-# 16s-report
+# TranaVy
 
 This repository contains a small reporting tool for generating a static HTML report from results produced by the [TRANA](https://github.com/genomic-medicine-sweden/TRANA) taxonomic profiling pipeline for 16S rRNA reads.
 
@@ -14,6 +14,14 @@ The script parses pipeline outputs and renders a human-readable summary report u
 | `static/style.css`           | CSS styling for the report                                                                       |
 | `output/`                    | Directory where the generated HTML report (`report.html`) will be saved after running the script |
 | `README.md`                  | Project documentation                                                                            |
+
+## Setup
+This project uses dependencies defined in pyproject.toml and requires Python ≥3.11. You can set up the environment using either Conda or Pixi.
+
+### Dependencies
+- jinja2
+- pandas
+- pyyaml
 
 ## Usage
 
