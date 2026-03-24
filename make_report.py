@@ -99,6 +99,7 @@ def main():
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
         .format({"estimated read counts": "{:.0f}"})
+        .format({"abundance": "{:.2%}"})
     )
     # Convert to html table
     html_table = styled_abundance.to_html(index=False, border=0)                                                            
@@ -107,6 +108,7 @@ def main():
     styled_neg_control = (neg_control_ordered.style
         .apply(highlight_species, axis=1)                                                                                   
         .format({"estimated read counts": "{:.0f}"})
+        .format({"abundance": "{:.2%}"})
     )
     # Convert to html table
     neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              
