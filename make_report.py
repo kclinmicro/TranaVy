@@ -30,7 +30,7 @@ def main():
     # Compute mean and median for each column
     assignment_summary = assignment_filtered.agg(['median', 'mean']).T.reset_index()                                            
     # Rename columns
-    assignment_summary.columns = ['tax id', 'median*', 'mean*']                                                             
+    assignment_summary.columns = ['tax id', 'median probability*', 'mean probability*']                                                             
 
 
     # Load neg control abundance table
@@ -117,7 +117,7 @@ def main():
         Purple rows indicate spike species
         <span class="inline-block w-4 h-4 bg-green-100 ml-14 mr-2 border"></span>
         Green rows indicate species not found in negative control<br>
-        <span class="not-italic text-sm"><span class="font-bold text-black">median*/mean*</span>: Median/Mean probability of the assigned taxon across reads</span>
+        <span class="not-italic text-sm"><span class="font-bold text-black">median/mean probability*</span>: Median/Mean probability of the assigned taxon across reads</span>
     </p>
     """
 
