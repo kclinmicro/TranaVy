@@ -80,7 +80,8 @@ def main():
     # Sort based on descending abundance
     abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)
     # Re-index the table
-    abundance_ordered = abundance_ordered.reset_index(drop=True)                                                            
+    abundance_ordered = abundance_ordered.reset_index(drop=True)
+    abundance_ordered.set_index("tax id")
     # Filter rows where abundance < 0.005
     abundance_ordered = abundance_ordered[
         abundance_ordered["abundance"] > 0.005
@@ -90,8 +91,15 @@ def main():
     if args.prob_score:
         abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")
     else:
-        abundance_assignment = abundance_ordered                
-    
+        abundance_assignment = abundance_ordered
+
+
+    # Merge abundance and alignment based metrics
+    if args.alignment_metrics:
+        alignment_metrics = get_alignment_metrics(args.sample_name, args.input_dir)
+        abundance_assignment = abundance_assignment.merge(alignment_metrics, on="tax id", how="left")
+
+
     # Spike species
     with open(args.config, "rb") as f:
         config = tomllib.load(f)
@@ -126,7 +134,9 @@ def main():
         .apply(highlight_species, axis=1)
         .format({
             "estimated read counts": "{:.0f}",
-            "abundance": "{:.2%}"
+            "abundance": "{:.2%}",
+            "median aligned identity": "{:.2%}",
+            "median aligned coverage": "{:.2%}",
             })
     )
     # Convert to html table
@@ -205,6 +215,155 @@ def main():
 
     with open(args.output_file, "w") as f:
         f.write(html)
+
+def get_alignment_metrics(sample_name, input_dir):
+    abundance_path = f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv"
+    assignment_path = f"{input_dir}/results/{sample_name}_downsampled.fastq_read-assignment-distributions.tsv"
+    alignments_path = f"{input_dir}/results/{sample_name}_downsampled.fastq_emu_alignments.sam"
+
+    df_abundance_unsorted = pd.read_csv(abundance_path, sep="\t")
+    df_abundance = df_abundance_unsorted.sort_values("abundance", ascending=False)
+
+    df_reads = load_read_file(assignment_path, df_abundance)
+    colnames_taxids = df_reads.columns
+
+    align_file = pysam.AlignmentFile(alignments_path)
+
+    alns_all = {}
+    for aln in align_file:
+        readid = aln.query_name  # Ex: b9bb144e-eb53-4509-8931-5f4477444a48
+        refname = aln.reference_name  # Ex: 562:emu_db:23853
+        taxid = str(aln.reference_name).split(":")[0]  # Ex: 562
+        refid = aln.reference_id  # Ex: 23853
+
+        if aln.is_secondary or aln.is_supplementary:
+            # We don't count these
+            continue
+
+        if taxid not in alns_all:
+            alns_all[taxid] = []
+        alns_all[taxid].append(aln)
+
+    taxtr = TaxTranslator()
+    aln_infos = []
+    i = 1
+    for taxid in colnames_taxids:
+        if taxid in alns_all:
+            alns = alns_all[taxid]
+            alns_cnt = len(alns)
+            identities, coverages = collect_distribution(alns)
+            median_id = statistics.median(identities)
+            median_cov = statistics.median(coverages)
+            abundance = float(df_abundance[df_abundance["tax_id"] == taxid]["abundance"].values[0])
+            taxon = taxtr.taxid_to_label(taxid)
+            aln_infos.append(
+                {
+                    "tax id": taxid,
+                    "aligned reads count": alns_cnt,
+                    "median aligned identity": median_id,
+                    "median aligned coverage": median_cov,
+                }
+            )
+
+    df_aln_metrics = pd.DataFrame(aln_infos)
+    return df_aln_metrics
+
+
+def load_read_file(readassmt_path, df_abundance):
+    df_reads = pd.read_csv(readassmt_path, sep="\t", header=0)
+    colnames_sorted = [cn for cn in df_abundance["tax_id"] if cn in df_reads.columns]
+    df_reads = df_reads[colnames_sorted]
+    return df_reads
+
+
+def collect_distribution(alns):
+    identities = []
+    coverages = []
+    for aln in alns:
+        identity, coverage = get_align_stats(aln)
+        identities.append(identity)
+        coverages.append(coverage)
+    return identities, coverages
+
+
+def get_align_stats(alignment):
+    """
+    Return list of inquired cigar stats (I,D,S,X) for alignment
+    """
+    cigar_stats = alignment.get_cigar_stats()[0]
+    n_mismatch = cigar_stats[10] - cigar_stats[1] - cigar_stats[2]
+
+    insertions = cigar_stats[1]
+    deletions = cigar_stats[2]
+    soft_clips = cigar_stats[4]
+
+    query_len = alignment.query_length
+    aln_len = alignment.query_alignment_length
+
+    nm = alignment.get_tag("NM") if alignment.has_tag("NM") else None
+
+    matches = 0
+    mismatches = 0
+    if nm is not None:
+        mismatches = nm - insertions - deletions
+        matches = aln_len - insertions - mismatches
+
+    # We can not normalize over query or reference length, as these
+    # won't contain either insertions or deletions
+    divisor = matches + mismatches + insertions + deletions
+
+    identity = 0
+    if divisor > 0:
+        identity = matches / divisor
+
+    coverage = 0
+    if query_len > 0:
+        coverage = aln_len / query_len
+
+    return identity, coverage
+
+
+class TaxTranslator(object):
+    def __init__(self, taxonomy_path="taxonomy.tsv"):
+        self.taxdf = pd.read_csv(taxonomy_path, sep="\t", dtype=str).set_index("tax_id")
+        self.taxid_to_label_mapping = {
+            tax_id: self.get_best_tax_label(row) for tax_id, row in self.taxdf.iterrows()
+        }
+
+    def taxid_to_label(self, taxid):
+        if taxid in self.taxid_to_label_mapping:
+            return self.taxid_to_label_mapping[taxid]
+        return taxid
+
+    def translate_taxids_in_df_columns(self, df):
+        df_cols_orig = df.columns.tolist()
+        new_headers = [
+            self.taxid_to_label(col.strip()) if col.strip().isdigit() else col
+            for col in df_cols_orig
+        ]
+        df.columns = new_headers
+        return df
+
+    def get_best_tax_label(self, row):
+        """Return the best available taxonomic label from left to right."""
+        for level in [
+            "species",
+            "genus",
+            "family",
+            "order",
+            "class",
+            "phylum",
+            "clade",
+            "superkingdom",
+            "subspecies",
+            "species subgroup",
+            "species group",
+        ]:
+            val = row.get(level, "")
+            if pd.notna(val) and str(val).strip() != "":
+                return val.strip()
+        return "Unknown"
+
 
 if __name__ == "__main__":
     main()
