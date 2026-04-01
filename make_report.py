@@ -1,11 +1,13 @@
-from jinja2 import Environment, FileSystemLoader
-import pandas as pd
-from datetime import date
-import yaml
-import json
 import argparse
-import tomllib
+from datetime import date
+from jinja2 import Environment, FileSystemLoader
+import json
+import yaml
+import pandas as pd
+import pysam
 import re
+import statistics
+import tomllib
 
 def main():
     argp = argparse.ArgumentParser()
@@ -15,6 +17,7 @@ def main():
     argp.add_argument("-n", "--neg-control", type=str, required=True, help="Name of the negative control")
     argp.add_argument("-c", "--config", type=str, default="configs/config.toml", help="Path to config file")
     argp.add_argument("-p", "--prob-score", action="store_true", help="Include probability score in the report")
+    argp.add_argument("-m", "--alignment-metrics", action="store_true", help="Include metrics based on the raw alignment of reads to the database (perc identity and perc coverage)")
 
     args = argp.parse_args()
 
@@ -28,32 +31,32 @@ def main():
     # Load sample read assignment table
     assignment = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_read-assignment-distributions.tsv", sep="\t")
     # Select all columns except the first one
-    assignment_filtered = assignment.iloc[:, 1:]                                                                            
+    assignment_filtered = assignment.iloc[:, 1:]
     # Compute mean and median for each column
-    assignment_summary = assignment_filtered.agg(['median', 'mean']).T.reset_index()                                            
+    assignment_summary = assignment_filtered.agg(['median', 'mean']).T.reset_index()
     # Rename columns
-    assignment_summary.columns = ['tax id', 'median probability*', 'mean probability*']                                                             
+    assignment_summary.columns = ['tax id', 'median probability*', 'mean probability*']
 
 
     # Load neg control abundance table
     neg_control_abundance = pd.read_csv(f"{args.input_dir}/results/{args.neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
-    neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]                                             
+    neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]
     # Move the first column (taxid)
-    neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]                                           
+    neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]
         .append(neg_control_filtered.columns[:1])
-        .append(neg_control_filtered.columns[5:])] 
+        .append(neg_control_filtered.columns[5:])]
     # Rename col names
-    neg_control_switched = neg_control_switched.rename(                                                                     
+    neg_control_switched = neg_control_switched.rename(
         columns={
             "estimated counts": "estimated read counts",
             "tax_id": "tax id"
         }
     )
     # Sort based on descending abundance
-    neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)                                 
+    neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)
     # Re-index the table
-    neg_control_ordered = neg_control_ordered.reset_index(drop=True)                                                        
+    neg_control_ordered = neg_control_ordered.reset_index(drop=True)
     # Filter rows where abundance < 0.005
     neg_control_ordered = neg_control_ordered[
         neg_control_ordered["abundance"] > 0.005
@@ -62,20 +65,20 @@ def main():
     # Load sample abundance table
     abundance = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
-    abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]                                                           
+    abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]
     # Move the first column (taxid)
-    abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]                                                 
+    abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]
         .append(abundance_filtered.columns[:1])
         .append(abundance_filtered.columns[5:])]
     # Rename col names
-    abundance_switched = abundance_switched.rename(                                                                         
+    abundance_switched = abundance_switched.rename(
         columns={
             "estimated counts": "estimated read counts",
             "tax_id": "tax id"
         }
     )
     # Sort based on descending abundance
-    abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)                                     
+    abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)
     # Re-index the table
     abundance_ordered = abundance_ordered.reset_index(drop=True)                                                            
     # Filter rows where abundance < 0.005
@@ -84,7 +87,7 @@ def main():
     ]
     # Merge abundance and assignment if prob_score is given
     if args.prob_score:
-        abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")    
+        abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")
     else:
         abundance_assignment = abundance_ordered                
     
@@ -95,7 +98,7 @@ def main():
     highlight = set(config.get("spike_species", []))
     
     # Define function for spike species
-    def highlight_species(row):                                                                                             
+    def highlight_species(row):
         if row["species"] in highlight:
             return ["background-color: #ddd6fe"] * len(row)
         return [""] * len(row)
@@ -117,7 +120,7 @@ def main():
 
     # Apply functions for spike species and unique species
     styled_abundance = (abundance_assignment.style
-        .apply(hundred_times_abundance, axis=1)                                                                          
+        .apply(hundred_times_abundance, axis=1)
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
         .format({
@@ -126,18 +129,18 @@ def main():
             })
     )
     # Convert to html table
-    html_table = styled_abundance.to_html(index=False, border=0)                                                            
+    html_table = styled_abundance.to_html(index=False, border=0)
 
     # Apply function for spike species
     styled_neg_control = (neg_control_ordered.style
-        .apply(highlight_species, axis=1)                                                                                   
+        .apply(highlight_species, axis=1)
         .format({
             "estimated read counts": "{:.0f}",
             "abundance": "{:.2%}"
             })
     )
     # Convert to html table
-    neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              
+    neg_control_html_table = styled_neg_control.to_html(index=False, border=0)
 
     legend_lines = [
         '<span class="inline-block w-4 h-4 bg-purple-200 mr-2 border"></span> Purple rows indicate spike species<br>',
