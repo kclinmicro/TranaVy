@@ -8,11 +8,7 @@ import tomllib
 
 def main():
     argp = argparse.ArgumentParser()
-    argp.add_argument("--input_dir", "-i", type=str, required=True, help="Path to the input directory containing results")
-    argp.add_argument("--output_file", "-o", type=str, required=True, help="Path to the output report file")
-    argp.add_argument("--sample_name", "-s", type=str, required=True, help="Name of the sample")
-    argp.add_argument("--neg_control", "-n", type=str, required=True, help="Name of the negative control")
-    argp.add_argument("--config", "-c", type=str, default="configs/config.toml", help="Path to config file")
+    argp.add_argument("-p", "--prob-score", action="store_true", help="Include probability score in the report")
 
     args = argp.parse_args()
 
@@ -80,6 +76,11 @@ def main():
     abundance_ordered = abundance_ordered[
         abundance_ordered["abundance"] > 0.005
     ]
+    # Merge abundance and assignment if prob_score is given
+    if args.prob_score:
+        abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")    
+    else:
+        abundance_assignment = abundance_ordered                
     
     # Spike species
     with open(args.config, "rb") as f:
@@ -118,15 +119,18 @@ def main():
     # Convert to html table
     neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              
 
-    legend_html = """
-    <p class="text-gray-700 italic mt-2">
-        <span class="inline-block w-4 h-4 bg-purple-200 mr-2 border"></span>
-        Purple rows indicate spike species
-        <span class="inline-block w-4 h-4 bg-green-100 ml-14 mr-2 border"></span>
-        Green rows indicate species not found in negative control<br>
-        <span class="not-italic text-sm"><span class="font-bold text-black">median/mean probability*</span>: Median/Mean probability of the assigned taxon across reads</span>
-    </p>
-    """
+    legend_lines = [
+        '<span class="inline-block w-4 h-4 bg-purple-200 mr-2 border"></span> Purple rows indicate spike species<br>',
+        '<span class="inline-block w-4 h-4 bg-green-100 mr-2 border"></span> Green rows indicate species not found in negative control<br>',
+        '<span class="inline-block w-4 h-4 bg-blue-200 mr-2 border"></span> Blue rows indicate species with abundances 100x greater than the negative control.<br>'
+    ]
+    # Optional line for probability score
+    if args.prob_score:
+        legend_lines.append(
+            '<span class="not-italic text-sm"><span class="font-bold text-black">median/mean probability*</span>: Median/Mean probability of the assigned taxon across reads</span>'
+        )
+
+    legend_html = '<p class="text-gray-700 italic mt-2">'+ "".join(legend_lines) + '</p>'
 
     legend_neg_html = """
     <p class="text-gray-700 italic mt-2">
