@@ -99,9 +99,19 @@ def main():
         if row["species"] not in neg_control_ordered["species"].values:
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
+    
+        # Define function for unique species not found in negative control
+    def hundred_times_abundance(row):
+        match = neg_control_ordered.loc[
+        neg_control_ordered["species"] == row["species"], "abundance"
+        ]
+        if not match.empty and row["abundance"] > 100 * match.iloc[0]:
+            return ["background-color: #bfdbfe"] * len(row)
+        return [""] * len(row)
 
     # Apply functions for spike species and unique species
-    styled_abundance = (abundance_assignment.style                                                                          
+    styled_abundance = (abundance_assignment.style
+        .apply(hundred_times_abundance, axis=1)                                                                          
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
         .format({"estimated read counts": "{:.0f}"})
