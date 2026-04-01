@@ -52,6 +52,10 @@ def main():
     neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)                                 
     # Re-index the table
     neg_control_ordered = neg_control_ordered.reset_index(drop=True)                                                        
+    # Filter rows where abundance < 0.005
+    neg_control_ordered = neg_control_ordered[
+        neg_control_ordered["abundance"] > 0.005
+    ]
 
     # Load sample abundance table
     abundance = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
@@ -72,9 +76,10 @@ def main():
     abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)                                     
     # Re-index the table
     abundance_ordered = abundance_ordered.reset_index(drop=True)                                                            
-    
-    # Merge abundance and assignment
-    abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")                             
+    # Filter rows where abundance < 0.005
+    abundance_ordered = abundance_ordered[
+        abundance_ordered["abundance"] > 0.005
+    ]
     
     # Spike species
     with open(args.config, "rb") as f:
