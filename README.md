@@ -28,30 +28,46 @@ This project uses dependencies defined in pyproject.toml and requires Python ≥
 Run the report generator using the Python script:
 
 ```bash
-python make_report.py --input_dir <results_directory> \
-                 --sample_name <sample_name> \
-                 --neg_control <negative_control_name> \
-                 [--config config.toml]
+python make_report.py --input-dir <results_directory> \
+                 --output-file <output_file> \
+                 --sample-name <sample_name> \
+                 --neg-control <negative_control_name> \
+                 [--config config.toml] \
+                 [--prob-score]
 ```
 
 ### Example
-
+Generation a report without probability scores:
 ```bash
 python make_report.py \
-  --input_dir results/sample_01 \
-  --sample_name sample_01 \
-  --neg_control neg_control \
+  --input-dir results/sample_01 \
+  --output-file output/sample_01_report.html \
+  --sample-name sample_01 \
+  --neg-control neg_control \
   --config config.toml
+```
+
+Generating a report with probability scores:
+```bash
+python make_report.py \
+  --input-dir results/sample_01 \
+  --output-file output/sample_01_report.html \
+  --sample-name sample_01 \
+  --neg-control neg_control \
+  --config config.toml \
+  --prob-score
 ```
 
 ### Arguments
 
 | Argument        | Short | Required | Description                                             |
 | --------------- | ----- | -------- | ------------------------------------------------------- |
-| `--input_dir`   | `-i`  | Yes      | Path to the directory containing TRANA pipeline results |
-| `--sample_name` | `-s`  | Yes      | Name of the sample to generate the report for           |
-| `--neg_control` | `-n`  | Yes      | Name of the negative control sample                     |
+| `--input-dir`   | `-i`  | Yes      | Path to the directory containing TRANA pipeline results |
+| `--output-file` | `-o`  | Yes      | Name of the output html report generated                |
+| `--sample-name` | `-s`  | Yes      | Name of the sample to generate the report for           |
+| `--neg-control` | `-n`  | Yes      | Name of the negative control sample                     |
 | `--config`      | `-c`  | No       | Path to configuration file (default: `config.toml`)     |
+| `--prob-score`  | `-p`  | No       | Handle to use for generating probability scores         |
 
 ### Customization
 
@@ -63,7 +79,7 @@ The script generates a **static HTML report** (`report.html`) in the `output/` d
 
 #### Summary Statistics
 
-Key sequencing metrics, including number of reads, mean/median read length and read quality (Phred score), read length N50, standard deviation (STDEV) of read lengths, and total bases.
+Key sequencing metrics, including number of reads (before downsampling), mean/median read length and read quality (Phred score), read length N50, standard deviation (STDEV) of read lengths, total bases and number of mapped reads.
 
 #### Sample Abundance Table
 
@@ -77,13 +93,16 @@ A table summarizing the abundance and taxonomic composition of the sample, with 
 | Family                | Assigned family                                       |
 | TaxID                 | NCBI Taxonomy ID                                      |
 | Estimated read counts | Number of reads assigned                              |
-| Median                | Median probability of the assigned taxon across reads |
-| Mean                  | Mean probability of the assigned taxon across reads   |
+| Median probability*   | Median probability of the assigned taxon across reads |
+| Mean probability*     | Mean probability of the assigned taxon across reads   |
+
+*: The two columns for median and mean probability is by default not included in the table. These can be added by supplying --prob_score (-p).
 
 **Color coding:**
 
 - **Purple rows** indicate spike species
 - **Green rows** indicate species absent in negative control
+- **Blue rows** indicate species with abundances 100x greater than the negative control
 
 #### Negative Control Table
 
