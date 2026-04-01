@@ -9,6 +9,11 @@ import re
 
 def main():
     argp = argparse.ArgumentParser()
+    argp.add_argument("-i", "--input-dir", type=str, required=True, help="Path to the input directory containing results")
+    argp.add_argument("-o", "--output-file", type=str, required=True, help="Path to the output report file")
+    argp.add_argument("-s", "--sample-name", type=str, required=True, help="Name of the sample")
+    argp.add_argument("-n", "--neg-control", type=str, required=True, help="Name of the negative control")
+    argp.add_argument("-c", "--config", type=str, default="configs/config.toml", help="Path to config file")
     argp.add_argument("-p", "--prob-score", action="store_true", help="Include probability score in the report")
 
     args = argp.parse_args()
@@ -115,8 +120,10 @@ def main():
         .apply(hundred_times_abundance, axis=1)                                                                          
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
-        .format({"estimated read counts": "{:.0f}"})
-        .format({"abundance": "{:.2%}"})
+        .format({
+            "estimated read counts": "{:.0f}",
+            "abundance": "{:.2%}"
+            })
     )
     # Convert to html table
     html_table = styled_abundance.to_html(index=False, border=0)                                                            
@@ -124,8 +131,10 @@ def main():
     # Apply function for spike species
     styled_neg_control = (neg_control_ordered.style
         .apply(highlight_species, axis=1)                                                                                   
-        .format({"estimated read counts": "{:.0f}"})
-        .format({"abundance": "{:.2%}"})
+        .format({
+            "estimated read counts": "{:.0f}",
+            "abundance": "{:.2%}"
+            })
     )
     # Convert to html table
     neg_control_html_table = styled_neg_control.to_html(index=False, border=0)                                              
