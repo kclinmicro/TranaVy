@@ -85,6 +85,7 @@ def main():
     abundance_ordered = abundance_ordered[
         abundance_ordered["abundance"] > 0.005
     ]
+
     # Merge abundance and assignment if prob_score is given
     if args.prob_score:
         abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")
@@ -96,19 +97,19 @@ def main():
         config = tomllib.load(f)
 
     highlight = set(config.get("spike_species", []))
-    
+
     # Define function for spike species
     def highlight_species(row):
         if row["species"] in highlight:
             return ["background-color: #ddd6fe"] * len(row)
         return [""] * len(row)
-        
+
     # Define function for unique species not found in negative control
     def unique_species(row):
         if row["species"] not in neg_control_ordered["species"].values:
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
-    
+
         # Define function for unique species not found in negative control
     def hundred_times_abundance(row):
         match = neg_control_ordered.loc[
@@ -164,7 +165,7 @@ def main():
 
     # Save date
     today = date.today().strftime("%Y-%m-%d")
-    
+
     # Load software version
     with open(f"{args.input_dir}/pipeline_info/software_versions.yml") as v:
         software_versions = yaml.safe_load(v)
@@ -178,6 +179,7 @@ def main():
         emu_log = f.read()
     # Use regex to find the value between "mapped" and "sequences"
     match_mapped = re.search(r"mapped (.*?) sequences", emu_log)
+
     # If a match is found, extract the value; otherwise, set it to "N/A" (avoid errors if the pattern is not found)
     if match_mapped:
         mapped_value = match_mapped.group(1)
