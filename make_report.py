@@ -250,7 +250,6 @@ def get_alignment_metrics(sample_name, input_dir):
     for taxid in colnames_taxids:
         if taxid in alns_all:
             alns = alns_all[taxid]
-            alns_cnt = len(alns)
             identities, coverages = collect_distribution(alns)
             median_id = statistics.median(identities)
             median_cov = statistics.median(coverages)
@@ -259,7 +258,6 @@ def get_alignment_metrics(sample_name, input_dir):
             aln_infos.append(
                 {
                     "tax id": taxid,
-                    "aligned reads count": alns_cnt,
                     "median aligned identity": median_id,
                     "median aligned coverage": median_cov,
                 }
