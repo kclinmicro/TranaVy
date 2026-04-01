@@ -5,6 +5,7 @@ import yaml
 import json
 import argparse
 import tomllib
+import re
 
 def main():
     argp = argparse.ArgumentParser()
@@ -160,6 +161,17 @@ def main():
     with open(f"{args.input_dir}/multiqc/multiqc_data/multiqc_data.json") as f:
         multiqc_data = json.load(f)
 
+    # Load emu log and extract mapped value
+    with open(f"{args.input_dir}/results/emu_logs/{args.sample_name}_emu_log.log") as f:
+        emu_log = f.read()
+    # Use regex to find the value between "mapped" and "sequences"
+    match_mapped = re.search(r"mapped (.*?) sequences", emu_log)
+    # If a match is found, extract the value; otherwise, set it to "N/A" (avoid errors if the pattern is not found)
+    if match_mapped:
+        mapped_value = match_mapped.group(1)
+    else:
+        mapped_value = "N/A"
+
     trana_version = software_versions["Workflow"]["genomic-medicine-sweden/TRANA"]
 
     html = template.render(
@@ -171,6 +183,7 @@ def main():
         today = today,
         pipeline_version = trana_version,
         multiqc_data  = multiqc_data,
+        mapped_value = mapped_value,
         input_dir = args.input_dir,
         sample_name = args.sample_name,
         neg_control = args.neg_control
