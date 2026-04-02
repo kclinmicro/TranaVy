@@ -127,31 +127,11 @@ def main():
             return ["background-color: #bfdbfe"] * len(row)
         return [""] * len(row)
 
-    def mark_low_alignment_metrics(row):
-        result = [""] * (len(row)-2)
-
-        if row["median aligned identity"] < 0.8:
-            result += ["color: red"]
-        elif row["median aligned identity"] < 0.85:
-            result += ["color: orange"]
-        else:
-            result += [""]
-
-        if row["median aligned coverage"] < 0.85:
-            result += ["color: red;"]
-        elif row["median aligned coverage"] < 0.9:
-            result += ["color: darkorange;"]
-        else:
-            result += [""]
-
-        return result
-
     # Apply functions for spike species and unique species
     styled_abundance = (abundance_assignment.style
         .apply(hundred_times_abundance, axis=1)
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
-        .apply(mark_low_alignment_metrics, axis=1)
         .format({
             "estimated read counts": "{:.0f}",
             "abundance": "{:.2%}",
