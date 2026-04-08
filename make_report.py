@@ -17,7 +17,7 @@ def main():
     argp.add_argument("-n", "--neg-control", type=str, required=True, help="Name of the negative control")
     argp.add_argument("-c", "--config", type=str, default="configs/config.toml", help="Path to config file")
     argp.add_argument("-p", "--prob-score", action="store_true", help="Include probability score in the report")
-    argp.add_argument("-m", "--alignment-metrics", action="store_true", help="Include metrics based on the raw alignment of reads to the database (perc identity and perc coverage)")
+    argp.add_argument("-m", "--alignment-metrics", action="store_true", help="Include metrics based on the raw alignment of reads to the database (% identity and % coverage)")
 
     args = argp.parse_args()
 
