@@ -323,15 +323,13 @@ def get_align_stats(alignment):
 
 class TaxTranslator(object):
     def __init__(self, taxonomy_path="taxonomy.tsv"):
-        self.taxdf = pd.read_csv(taxonomy_path, sep="\t", dtype=str).set_index("tax_id")
-        self.taxid_to_label_mapping = {
-            tax_id: self.get_best_tax_label(row) for tax_id, row in self.taxdf.iterrows()
+        self._taxdf = pd.read_csv(taxonomy_path, sep="\t", dtype=str).set_index("tax_id")
+        self._taxid_to_label_mapping = {
+            tax_id: self.get_best_tax_label(row) for tax_id, row in self._taxdf.iterrows()
         }
 
     def taxid_to_label(self, taxid):
-        if taxid in self.taxid_to_label_mapping:
-            return self.taxid_to_label_mapping[taxid]
-        return taxid
+        return self._taxid_to_label_mapping.get(taxid, taxid)
 
     def translate_taxids_in_df_columns(self, df):
         df_cols_orig = df.columns.tolist()
