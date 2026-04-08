@@ -37,7 +37,6 @@ def main():
     # Rename columns
     assignment_summary.columns = ['tax id', 'median probability*', 'mean probability*']
 
-
     # Load neg control abundance table
     neg_control_abundance = pd.read_csv(f"{args.input_dir}/results/{args.neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
@@ -93,12 +92,10 @@ def main():
     else:
         abundance_assignment = abundance_ordered
 
-
     # Merge abundance and alignment based metrics
     if args.alignment_metrics:
         alignment_metrics = get_alignment_metrics(args.sample_name, args.input_dir)
         abundance_assignment = abundance_assignment.merge(alignment_metrics, on="tax id", how="left")
-
 
     # Spike species
     with open(args.config, "rb") as f:
@@ -215,6 +212,7 @@ def main():
 
     with open(args.output_file, "w") as f:
         f.write(html)
+
 
 def get_alignment_metrics(sample_name, input_dir):
     abundance_path = f"{input_dir}/results/{sample_name}_downsampled.fastq_rel-abundance.tsv"

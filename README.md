@@ -19,8 +19,11 @@ The script parses pipeline outputs and renders a human-readable summary report u
 This project uses dependencies defined in pyproject.toml and requires Python ≥3.11. You can set up the environment using either Conda or Pixi.
 
 ### Dependencies
+
+- python >=3.11,<=3.13
 - jinja2
 - pandas
+- pysam
 - pyyaml
 
 ## Usage
