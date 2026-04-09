@@ -3,6 +3,7 @@ from datetime import date
 from jinja2 import Environment, FileSystemLoader
 import json
 import yaml
+from pathlib import Path
 import pandas as pd
 import pysam
 import re
@@ -204,7 +205,7 @@ def main():
         pipeline_version = trana_version,
         multiqc_data  = multiqc_data,
         mapped_value = mapped_value,
-        input_dir = args.input_dir,
+        input_dir = Path(args.input_dir).name,
         sample_name = args.sample_name,
         neg_control = args.neg_control
     )
