@@ -121,7 +121,7 @@ def main():
         neg_control_ordered["species"] == row["species"], "abundance"
         ]
         if not match.empty and row["abundance"] > 100 * match.iloc[0]:
-            return ["background-color: #bfdbfe"] * len(row)
+            return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
 
     # Apply functions for spike species and unique species
@@ -152,8 +152,7 @@ def main():
 
     legend_lines = [
         '<span class="inline-block w-4 h-4 bg-purple-200 mr-2 border"></span> Purple rows indicate spike species<br>',
-        '<span class="inline-block w-4 h-4 bg-green-100 mr-2 border"></span> Green rows indicate species not found in negative control<br>',
-        '<span class="inline-block w-4 h-4 bg-blue-200 mr-2 border"></span> Blue rows indicate species with abundances 100x greater than the negative control.<br>'
+        '<span class="inline-block w-4 h-4 bg-green-100 mr-2 border"></span> Green rows indicate species not found in negative control or with abundances 100x greater than the negative control.<br>'
     ]
     # Optional line for probability score
     if args.prob_score:
