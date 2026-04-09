@@ -47,7 +47,7 @@ python make_report.py --input-dir <results_directory> \
 ```
 
 ### Example
-Generation a report without probability scores:
+Generating a report without probability scores:
 ```bash
 python make_report.py \
   --input-dir results/sample_01 \
@@ -121,8 +121,7 @@ the following columns:
 **Color coding:**
 
 - **Purple rows** indicate spike species
-- **Green rows** indicate species absent in negative control
-- **Blue rows** indicate species with abundances 100x greater than the negative control
+- **Green rows** indicate species absent in negative control or with abundances 100x greater than the negative control
 
 #### Negative Control Table
 
