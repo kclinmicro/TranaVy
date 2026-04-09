@@ -36,7 +36,8 @@ python make_report.py --input-dir <results_directory> \
                  --sample-name <sample_name> \
                  --neg-control <negative_control_name> \
                  [--config config.toml] \
-                 [--prob-score]
+                 [--prob-score] \
+                 [--alignment-metrics]
 ```
 
 ### Example
@@ -63,14 +64,15 @@ python make_report.py \
 
 ### Arguments
 
-| Argument        | Short | Required | Description                                             |
-| --------------- | ----- | -------- | ------------------------------------------------------- |
-| `--input-dir`   | `-i`  | Yes      | Path to the directory containing TRANA pipeline results |
-| `--output-file` | `-o`  | Yes      | Name of the output html report generated                |
-| `--sample-name` | `-s`  | Yes      | Name of the sample to generate the report for           |
-| `--neg-control` | `-n`  | Yes      | Name of the negative control sample                     |
-| `--config`      | `-c`  | No       | Path to configuration file (default: `config.toml`)     |
-| `--prob-score`  | `-p`  | No       | Handle to use for generating probability scores         |
+| Argument              | Short | Required | Description                                                                                                 |
+| ---------------       | ----- | -------- | -------------------------------------------------------                                                     |
+| `--input-dir`         | `-i`  | Yes      | Path to the directory containing TRANA pipeline results                                                     |
+| `--output-file`       | `-o`  | Yes      | Name of the output html report generated                                                                    |
+| `--sample-name`       | `-s`  | Yes      | Name of the sample to generate the report for                                                               |
+| `--neg-control`       | `-n`  | Yes      | Name of the negative control sample                                                                         |
+| `--config`            | `-c`  | No       | Path to configuration file (default: `config.toml`)                                                         |
+| `--prob-score`        | `-p`  | No       | Handle to use for generating probability scores                                                             |
+| `--alignment-metrics` | `-m`  | No       | Include metrics based on the raw alignment of reads to the database (percent identity and percent coverage) |
 
 ### Customization
 
