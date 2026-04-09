@@ -1,8 +1,12 @@
 # TranaVy
 
-This repository contains a small reporting tool for generating a static HTML report from results produced by the [TRANA](https://github.com/genomic-medicine-sweden/TRANA) taxonomic profiling pipeline for 16S rRNA reads.
+This repository contains a small reporting tool for generating a static HTML
+report from results produced by the
+[TRANA](https://github.com/genomic-medicine-sweden/TRANA) taxonomic profiling
+pipeline for 16S rRNA reads.
 
-The script parses pipeline outputs and renders a human-readable summary report using a Jinja2 HTML template and CSS styling.
+The script parses pipeline outputs and renders a human-readable summary report
+using a Jinja2 HTML template and CSS styling.
 
 ## Repository Contents
 
@@ -16,7 +20,9 @@ The script parses pipeline outputs and renders a human-readable summary report u
 | `README.md`                  | Project documentation                                                                            |
 
 ## Setup
-This project uses dependencies defined in pyproject.toml and requires Python ≥3.11. You can set up the environment using either Conda or Pixi.
+
+This project uses dependencies defined in pyproject.toml and requires Python
+≥3.11. You can set up the environment using either Conda or Pixi.
 
 ### Dependencies
 
@@ -76,19 +82,28 @@ python make_report.py \
 
 ### Customization
 
-The report can be customized to the users spike species by editing the already existing, or creating a new, `config.toml` file and supplying it through `--config` (`-c`).
+The report can be customized to the users spike species by editing the already
+existing, or creating a new, `config.toml` file and supplying it through
+`--config` (`-c`).
 
 ### Output
 
-The script generates a **static HTML report** (`report.html`) in the `output/` directory summarizing results from the [TRANA](https://github.com/genomic-medicine-sweden/TRANA) pipeline. The report contains:
+The script generates a **static HTML report** (`report.html`) in the `output/`
+directory summarizing results from the
+[TRANA](https://github.com/genomic-medicine-sweden/TRANA) pipeline. The report
+contains:
 
 #### Summary Statistics
 
-Key sequencing metrics, including number of reads (before downsampling), mean/median read length and read quality (Phred score), read length N50, standard deviation (STDEV) of read lengths, total bases and number of mapped reads.
+Key sequencing metrics, including number of reads (before downsampling),
+mean/median read length and read quality (Phred score), read length N50,
+standard deviation (STDEV) of read lengths, total bases and number of mapped
+reads.
 
 #### Sample Abundance Table
 
-A table summarizing the abundance and taxonomic composition of the sample, with the following columns:
+A table summarizing the abundance and taxonomic composition of the sample, with
+the following columns:
 
 | Column                | Description                                           |
 | --------------------- | ----------------------------------------------------- |
