@@ -295,6 +295,7 @@ def get_align_stats(alignment):
 
     query_len = alignment.query_length
     aln_len = alignment.query_alignment_length
+    ref_len = alignment.reference_length
 
     nm = alignment.get_tag("NM") if alignment.has_tag("NM") else None
 
@@ -314,7 +315,7 @@ def get_align_stats(alignment):
 
     coverage = 0
     if query_len > 0:
-        coverage = aln_len / query_len
+        coverage = (aln_len - insertions) / ref_len
 
     return identity, coverage
 
