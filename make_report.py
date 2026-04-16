@@ -248,7 +248,7 @@ def get_alignment_metrics(sample_name, input_dir):
     for taxid in colnames_taxids:
         if taxid in alns_all:
             alns = alns_all[taxid]
-            identities, coverages = collect_distribution(alns)
+            identities, coverages = collect_distribution(alns, align_file)
             median_id = statistics.median(identities)
             median_cov = statistics.median(coverages)
             abundance = float(df_abundance[df_abundance["tax_id"] == taxid]["abundance"].values[0])
@@ -272,17 +272,17 @@ def load_read_file(readassmt_path, df_abundance):
     return df_reads
 
 
-def collect_distribution(alns):
+def collect_distribution(alns, alignment_file):
     identities = []
     coverages = []
     for aln in alns:
-        identity, coverage = get_align_stats(aln)
+        identity, coverage = get_align_stats(aln, alignment_file)
         identities.append(identity)
         coverages.append(coverage)
     return identities, coverages
 
 
-def get_align_stats(alignment):
+def get_align_stats(alignment, alignment_file):
     CIGAROP_MATCH = 0
     CIGAROP_INS = 1
     CIGAROP_DEL = 2
@@ -304,26 +304,45 @@ def get_align_stats(alignment):
     soft_clips = cigar_stats[CIGAROP_SOFTCLIP]
 
     query_len = alignment.query_length
-    aln_len = alignment.query_alignment_length
-    ref_len = alignment.reference_length
+    query_alignment_len = alignment.query_alignment_length
 
-    identity, ref_coverage = calculate_align_stats(query_len, aln_len, ref_len,
-                                                   insertions, deletions,
-                                                   edit_distance, soft_clips)
+    reference_len = alignment_file.get_reference_length(alignment.reference_name)
+    reference_alignment_len = alignment.reference_length
+
+    identity, ref_coverage = calculate_align_stats(query_len,
+                                                   query_alignment_len,
+                                                   reference_len,
+                                                   reference_alignment_len,
+                                                   insertions,
+                                                   deletions,
+                                                   edit_distance,
+                                                   soft_clips)
+
+    return identity, ref_coverage
 
 
 
-def calculate_align_stats(query_len, alignment_len, reference_length,
-                          insertions, deletions, edit_distance, soft_clips):
+def calculate_align_stats(query_len,
+                          query_alignment_len,
+                          reference_len,
+                          reference_alignment_len,
+                          insertions,
+                          deletions,
+                          edit_distance,
+                          soft_clips):
     """
     Return identity and coverage against the reference sequence
     """
 
+    # ------------------------------------------------
+    # Calculate identity
+    # ------------------------------------------------
+    # TODO: Need to update, to follow some best practice, like BLAST-style
     matches = 0
     mismatches = 0
     if edit_distance is not None:
         mismatches = edit_distance - insertions - deletions
-        matches = alignment_len - insertions - mismatches
+        matches = query_alignment_len - deletions - mismatches
 
     # We can not normalize over query or reference length, as these
     # won't contain either insertions or deletions
@@ -333,9 +352,12 @@ def calculate_align_stats(query_len, alignment_len, reference_length,
     if divisor > 0:
         identity = matches / divisor
 
+    # ------------------------------------------------
+    # Calculate coverage
+    # ------------------------------------------------
     coverage = 0
-    if query_len > 0:
-        coverage = (alignment_len - insertions) / reference_length
+    if reference_len > 0:
+        coverage = reference_alignment_len / reference_len
 
     return identity, coverage
 
