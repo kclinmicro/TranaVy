@@ -283,27 +283,47 @@ def collect_distribution(alns):
 
 
 def get_align_stats(alignment):
-    """
-    Return list of inquired cigar stats (I,D,S,X) for alignment
-    """
-    cigar_stats = alignment.get_cigar_stats()[0]
-    n_mismatch = cigar_stats[10] - cigar_stats[1] - cigar_stats[2]
+    CIGAROP_MATCH = 0
+    CIGAROP_INS = 1
+    CIGAROP_DEL = 2
+    CIGAROP_REF_SKIP = 3
+    CIGAROP_SOFTCLIP = 4
+    CIGAROP_HARDCLIP = 5
+    CIGAROP_PAD = 6
+    CIGAROP_EQUAL = 7
+    CIGAROP_DIFF = 8
+    CIGAROP_BACK = 9
 
-    insertions = cigar_stats[1]
-    deletions = cigar_stats[2]
-    soft_clips = cigar_stats[4]
+    cigar_stats = alignment.get_cigar_stats()[0]
+    edit_distance = alignment.get_tag("NM") if alignment.has_tag("NM") else None
+
+    cigar_stats = alignment.get_cigar_stats()[0]
+
+    insertions = cigar_stats[CIGAROP_INS]
+    deletions = cigar_stats[CIGAROP_DEL]
+    soft_clips = cigar_stats[CIGAROP_SOFTCLIP]
 
     query_len = alignment.query_length
     aln_len = alignment.query_alignment_length
     ref_len = alignment.reference_length
 
-    nm = alignment.get_tag("NM") if alignment.has_tag("NM") else None
+    identity, ref_coverage = calculate_align_stats(query_len, aln_len, ref_len,
+                                                   insertions, deletions,
+                                                   edit_distance, soft_clips)
+
+
+
+def calculate_align_stats(query_len, alignment_len, reference_length,
+                          insertions, deletions, edit_distance, soft_clips):
+    """
+    Return identity and coverage against the reference sequence
+    """
 
     matches = 0
     mismatches = 0
-    if nm is not None:
-        mismatches = nm - insertions - deletions
-        matches = aln_len - insertions - mismatches
+    if edit_distance is not None:
+        mismatches = edit_distance - insertions - deletions
+        matches = alignment_len - insertions - mismatches
 
     # We can not normalize over query or reference length, as these
     # won't contain either insertions or deletions
@@ -315,7 +335,7 @@ def get_align_stats(alignment):
 
     coverage = 0
     if query_len > 0:
-        coverage = (aln_len - insertions) / ref_len
+        coverage = (alignment_len - insertions) / reference_length
 
     return identity, coverage
 
