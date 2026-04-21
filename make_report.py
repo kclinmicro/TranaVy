@@ -97,6 +97,8 @@ def main():
     if args.alignment_metrics:
         alignment_metrics = get_alignment_metrics(args.sample_name, args.input_dir)
         abundance_assignment = abundance_assignment.merge(alignment_metrics, on="tax id", how="left")
+        neg_control_alignment_metrics = get_alignment_metrics(args.neg_control, args.input_dir)
+        neg_control_ordered = neg_control_ordered.merge(neg_control_alignment_metrics, on="tax id", how="left")
 
     # Spike species
     with open(args.config, "rb") as f:
@@ -145,7 +147,9 @@ def main():
         .apply(highlight_species, axis=1)
         .format({
             "estimated read counts": "{:.0f}",
-            "abundance": "{:.2%}"
+            "abundance": "{:.2%}",
+            "median aligned identity": "{:.2%}",
+            "median aligned coverage": "{:.2%}",
             })
     )
     # Convert to html table
