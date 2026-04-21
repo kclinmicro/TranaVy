@@ -135,13 +135,15 @@
     <p class="text-sm text-gray-600 mb-2">
       Only species with abundance ≥ 0.5% are shown.
     </p>
-    <p class="text-base font-semibold">{{ sample_name }}</p>
-    <div class="sticky-table overflow-hidden">
-      <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
-        {{ table | safe }}
+    {% if "16SNEG" not in sample_name %}
+      <p class="text-base font-semibold">{{ sample_name }}</p>
+      <div class="sticky-table overflow-hidden">
+        <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
+          {{ table | safe }}
+        </div>
+        {{ legend }}
       </div>
-      {{ legend }}
-    </div>
+    {% endif %}
     <p class="text-base font-semibold mt-5">Negative control</p>
     <div class="max-h-96 overflow-x-auto overflow-y-auto sticky-table">
       {{ neg_control_table | safe }}
