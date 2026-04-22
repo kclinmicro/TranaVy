@@ -58,9 +58,9 @@ def main():
     # Re-index the table
     neg_control_ordered = neg_control_ordered.reset_index(drop=True)
     # Filter rows where abundance < 0.005
-    neg_control_ordered = neg_control_ordered[
-        neg_control_ordered["abundance"] > 0.005
-    ]
+    #neg_control_ordered = neg_control_ordered[
+    #    neg_control_ordered["abundance"] > 0.005
+    #]
 
     # Load sample abundance table
     abundance = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
@@ -83,9 +83,9 @@ def main():
     abundance_ordered = abundance_ordered.reset_index(drop=True)
     abundance_ordered.set_index("tax id")
     # Filter rows where abundance < 0.005
-    abundance_ordered = abundance_ordered[
-        abundance_ordered["abundance"] > 0.005
-    ]
+    #abundance_ordered = abundance_ordered[
+    #    abundance_ordered["abundance"] > 0.005
+    #]
 
     # Merge abundance and assignment if prob_score is given
     if args.prob_score:
@@ -118,7 +118,7 @@ def main():
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
 
-        # Define function for unique species not found in negative control
+    # Define function for species with a 100 times more abundance than in the negative control
     def hundred_times_abundance(row):
         match = neg_control_ordered.loc[
         neg_control_ordered["species"] == row["species"], "abundance"
@@ -126,10 +126,37 @@ def main():
         if not match.empty and row["abundance"] > 100 * match.iloc[0]:
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
+    
+    # Define function for species normalized against spike
+    def normalised_abundance(row, spike_species="Imtechella halotolerans"):
+        # Get abundance of spike in sample
+        sample_spike= abundance_ordered.loc[
+            abundance_ordered["species"] == spike_species, "abundance"
+        ]
+        # Get abundance of spike in neg control
+        control_spike = neg_control_ordered.loc[
+        neg_control_ordered["species"] == spike_species, "abundance"
+        ]
+        # Get abundance of species in neg control
+        control_match = neg_control_ordered.loc[
+            neg_control_ordered["species"] == row["species"], "abundance"
+        ]
+        # If any of these are empty, we can't do the calculation, so we return no highlight
+        if sample_spike.empty or control_spike.empty or control_match.empty:
+            return [""] * len(row)
+        
+        # Normalise (species / spike) in sample and control, then compare
+        sample_ratio = row["abundance"] / sample_spike.iloc[0]
+        control_ratio = control_match.iloc[0] / control_spike.iloc[0]
+
+        if control_ratio > 0 and sample_ratio > 50 * control_ratio:
+            return ["background-color: #dcfce7"] * len(row)
+        
+        return [""] * len(row)
 
     # Apply functions for spike species and unique species
     styled_abundance = (abundance_assignment.style
-        .apply(hundred_times_abundance, axis=1)
+        .apply(normalised_abundance, axis=1)
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
         .format({
