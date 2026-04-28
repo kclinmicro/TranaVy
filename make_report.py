@@ -117,14 +117,10 @@ def main():
         if row["species"] not in neg_control_ordered["species"].values:
             return ["background-color: #dcfce7"] * len(row)
         return [""] * len(row)
-
-    # Define function for species with a 100 times more abundance than in the negative control
-    def hundred_times_abundance(row):
-        match = neg_control_ordered.loc[
-        neg_control_ordered["species"] == row["species"], "abundance"
-        ]
-        if not match.empty and row["abundance"] > 100 * match.iloc[0]:
-            return ["background-color: #dcfce7"] * len(row)
+    
+    def low_abundance(row):
+        if row["abundance"] < 0.005:
+            return ["color: #9ca3af"] * len(row)
         return [""] * len(row)
     
     # Define function for species normalized against spike
@@ -159,6 +155,7 @@ def main():
         .apply(normalised_abundance, axis=1)
         .apply(unique_species, axis=1)
         .apply(highlight_species, axis=1)
+        .apply(low_abundance, axis=1)
         .format({
             "estimated read counts": "{:.0f}",
             "abundance": "{:.2%}",
@@ -172,6 +169,7 @@ def main():
     # Apply function for spike species
     styled_neg_control = (neg_control_ordered.style
         .apply(highlight_species, axis=1)
+        .apply(low_abundance, axis=1)
         .format({
             "estimated read counts": "{:.0f}",
             "abundance": "{:.2%}",
