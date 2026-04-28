@@ -57,10 +57,8 @@ def main():
     neg_control_ordered = neg_control_switched.sort_values(by="abundance", ascending=False)
     # Re-index the table
     neg_control_ordered = neg_control_ordered.reset_index(drop=True)
-    # Filter rows where abundance < 0.005
-    #neg_control_ordered = neg_control_ordered[
-    #    neg_control_ordered["abundance"] > 0.005
-    #]
+    # Create fake index column for styling purposes (need it to start from 1 instead of 0)
+    neg_control_ordered.insert(0, "row", range(1, len(neg_control_ordered) + 1))
 
     # Load sample abundance table
     abundance = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
@@ -81,17 +79,15 @@ def main():
     abundance_ordered = abundance_switched.sort_values(by="abundance", ascending=False)
     # Re-index the table
     abundance_ordered = abundance_ordered.reset_index(drop=True)
-    abundance_ordered.set_index("tax id")
-    # Filter rows where abundance < 0.005
-    #abundance_ordered = abundance_ordered[
-    #    abundance_ordered["abundance"] > 0.005
-    #]
 
     # Merge abundance and assignment if prob_score is given
     if args.prob_score:
         abundance_assignment = abundance_ordered.merge(assignment_summary, on="tax id", how="left")
     else:
         abundance_assignment = abundance_ordered
+
+    # Create fake index column for styling purposes (need it to start from 1 instead of 0)
+    abundance_assignment.insert(0, "row", range(1, len(abundance_ordered) + 1))
 
     # Merge abundance and alignment based metrics
     if args.alignment_metrics:
@@ -149,7 +145,7 @@ def main():
             return ["background-color: #dcfce7"] * len(row)
         
         return [""] * len(row)
-
+    
     # Apply functions for spike species and unique species
     styled_abundance = (abundance_assignment.style
         .apply(normalised_abundance, axis=1)
@@ -162,9 +158,15 @@ def main():
             "median aligned identity": "{:.2%}",
             "median aligned coverage": "{:.2%}",
             })
+        .set_properties(subset=["row"], **{
+            "background-color": "#f2f2f2",
+            "font-weight": "bold"
+        })
+        .hide(axis="index")
     )
+
     # Convert to html table
-    html_table = styled_abundance.to_html(index=False, border=0)
+    html_table = styled_abundance.to_html(index=False, border=0, escape=False)
 
     # Apply function for spike species
     styled_neg_control = (neg_control_ordered.style
@@ -176,9 +178,14 @@ def main():
             "median aligned identity": "{:.2%}",
             "median aligned coverage": "{:.2%}",
             })
+        .set_properties(subset=["row"], **{
+            "background-color": "#f2f2f2",
+            "font-weight": "bold"
+        })
+        .hide(axis="index")            
     )
     # Convert to html table
-    neg_control_html_table = styled_neg_control.to_html(index=False, border=0)
+    neg_control_html_table = styled_neg_control.to_html(index=False, border=0, escape=False)
 
     legend_lines = [
         '<span class="inline-block w-4 h-4 bg-purple-200 mr-2 border"></span> Purple rows indicate spike species<br>',
