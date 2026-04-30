@@ -141,7 +141,7 @@ def main():
         sample_ratio = row["abundance"] / sample_spike.iloc[0]
         control_ratio = control_match.iloc[0] / control_spike.iloc[0]
 
-        if control_ratio > 0 and sample_ratio > 50 * control_ratio:
+        if control_ratio > 0 and sample_ratio > 25 * control_ratio:
             return ["background-color: #dcfce7"] * len(row)
         
         return [""] * len(row)
