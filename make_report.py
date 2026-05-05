@@ -29,6 +29,9 @@ def main():
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("report.html.j2")
 
+    # Set low abundance cutoff value
+    LOW_ABUNDANCE_CUTOFF = 0.005
+
     # Load sample read assignment table
     assignment = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_read-assignment-distributions.tsv", sep="\t")
     # Select all columns except the first one
@@ -115,7 +118,7 @@ def main():
         return [""] * len(row)
     
     def low_abundance(row):
-        if row["abundance"] < 0.005:
+        if row["abundance"] < LOW_ABUNDANCE_CUTOFF:
             return ["color: #9ca3af"] * len(row)
         return [""] * len(row)
     
@@ -127,7 +130,7 @@ def main():
         ]
         # Get abundance of spike in neg control
         control_spike = neg_control_ordered.loc[
-        neg_control_ordered["species"] == spike_species, "abundance"
+            neg_control_ordered["species"] == spike_species, "abundance"
         ]
         # Get abundance of species in neg control
         control_match = neg_control_ordered.loc[
