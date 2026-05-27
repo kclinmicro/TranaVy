@@ -5,7 +5,8 @@ requires-python = ">=3.11"
 dependencies = [
   "jinja2",
   "pandas",
-  "pyyaml"
+  "pyyaml",
+  "pysam",
 ]
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
