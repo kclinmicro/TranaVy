@@ -18,6 +18,9 @@ using a Jinja2 HTML template and CSS styling.
 | `static/style.css`           | CSS styling for the report                                                                       |
 | `output/`                    | Directory where the generated HTML report (`report.html`) will be saved after running the script |
 | `README.md`                  | Project documentation                                                                            |
+| `pyproject.toml`             | Configuration file including tool dependecies for the project.                                   |
+| `make_report_test.py`        | Minimal test python script for alignment metrics                                                 |
+| `taxonomy.tsv`               | TSV file with mapping of taxonomic ids to species                                                |
 
 ## Setup
 
@@ -47,7 +50,7 @@ python make_report.py --input-dir <results_directory> \
 ```
 
 ### Example
-Generating a report without probability scores:
+Generating a minimal report:
 ```bash
 python make_report.py \
   --input-dir results/sample_01 \
@@ -57,7 +60,7 @@ python make_report.py \
   --config config.toml
 ```
 
-Generating a report with probability scores:
+Generating a report with probability scores and alignment metrics:
 ```bash
 python make_report.py \
   --input-dir results/sample_01 \
@@ -65,7 +68,8 @@ python make_report.py \
   --sample-name sample_01 \
   --neg-control neg_control \
   --config config.toml \
-  --prob-score
+  --prob-score \
+  --alignment-metrics
 ```
 
 ### Arguments
@@ -73,11 +77,11 @@ python make_report.py \
 | Argument              | Short | Required | Description                                                                                                 |
 | ---------------       | ----- | -------- | -------------------------------------------------------                                                     |
 | `--input-dir`         | `-i`  | Yes      | Path to the directory containing TRANA pipeline results                                                     |
-| `--output-file`       | `-o`  | Yes      | Name of the output html report generated                                                                    |
+| `--output-file`       | `-o`  | Yes      | Name of the output html report to be generated                                                              |
 | `--sample-name`       | `-s`  | Yes      | Name of the sample to generate the report for                                                               |
 | `--neg-control`       | `-n`  | Yes      | Name of the negative control sample                                                                         |
 | `--config`            | `-c`  | No       | Path to configuration file (default: `config.toml`)                                                         |
-| `--prob-score`        | `-p`  | No       | Handle to use for generating probability scores                                                             |
+| `--prob-score`        | `-p`  | No       | Include the generation and addition of probability scores in the report                                     |
 | `--alignment-metrics` | `-m`  | No       | Include metrics based on the raw alignment of reads to the database (percent identity and percent coverage) |
 
 ### Customization
@@ -85,6 +89,7 @@ python make_report.py \
 The report can be customized to the users spike species by editing the already
 existing, or creating a new, `config.toml` file and supplying it through
 `--config` (`-c`).
+Define all spike species in the `spike_species` list. The species used for normalisation is specified separately using `normalising_spike_species`, which must correspond to one of the entries in the `spike_species` list.
 
 ### Output
 
@@ -105,23 +110,26 @@ reads.
 A table summarizing the abundance and taxonomic composition of the sample, with
 the following columns:
 
-| Column                | Description                                           |
-| --------------------- | ----------------------------------------------------- |
-| Abundance             | Relative abundance of the taxon                       |
-| Species               | Assigned species                                      |
-| Genus                 | Assigned genus                                        |
-| Family                | Assigned family                                       |
-| TaxID                 | NCBI Taxonomy ID                                      |
-| Estimated read counts | Number of reads assigned                              |
-| Median probability*   | Median probability of the assigned taxon across reads |
-| Mean probability*     | Mean probability of the assigned taxon across reads   |
+| Column                    | Description                                           |
+| ------------------------- | ----------------------------------------------------- |
+| Abundance                 | Relative abundance of the taxon                       |
+| Species                   | Assigned species                                      |
+| Genus                     | Assigned genus                                        |
+| Family                    | Assigned family                                       |
+| TaxID                     | NCBI Taxonomy ID                                      |
+| Estimated read counts     | Number of reads assigned                              |
+| Median probability*       | Median probability of the assigned taxon across reads |
+| Mean probability*         | Mean probability of the assigned taxon across reads   |
+| Median aligned identity** | Median aligned percent identity                       |
+| Median aligned coverage** | Median aligned percent coverage                        |
 
-*: The two columns for median and mean probability is by default not included in the table. These can be added by supplying --prob_score (-p).
+*: The two columns for median and mean probability is by default not included in the table. These can be added by supplying the argument --prob_score (-p).
+**: The two columns for median aligned identity and coverage is by default not included in the table. These can be added by supplying the argument --alignment-metrics (-m).
 
 **Color coding:**
 
 - **Purple rows** indicate spike species
-- **Green rows** indicate species absent in negative control or with abundances 100x greater than the negative control
+- **Green rows** indicate species absent in negative control or with normalized abundances 25x greater than the negative control. Normalized abundance is calculated through comparing the abundance of species to the abundance of spike species.
 
 #### Negative Control Table
 
