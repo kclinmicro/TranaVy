@@ -104,7 +104,8 @@ def main():
         config = tomllib.load(f)
 
     highlight = set(config.get("spike_species", []))
-
+    normalising_spike_species = config.get("normalising_spike_species")
+    
     # Define function for spike species
     def highlight_species(row):
         if row["species"] in highlight:
@@ -123,19 +124,26 @@ def main():
         return [""] * len(row)
     
     # Define function for species normalized against spike
-    def normalised_abundance(row, spike_species="Imtechella halotolerans"):
+    def normalised_abundance(row):
+        # No spike configured -> do nothing
+        if not normalising_spike_species:
+            return [""] * len(row)
+        
         # Get abundance of spike in sample
         sample_spike= abundance_ordered.loc[
-            abundance_ordered["species"] == spike_species, "abundance"
+            abundance_ordered["species"] == normalising_spike_species, "abundance"
         ]
+
         # Get abundance of spike in neg control
         control_spike = neg_control_ordered.loc[
-            neg_control_ordered["species"] == spike_species, "abundance"
+            neg_control_ordered["species"] == normalising_spike_species, "abundance"
         ]
+
         # Get abundance of species in neg control
         control_match = neg_control_ordered.loc[
             neg_control_ordered["species"] == row["species"], "abundance"
         ]
+
         # If any of these are empty, we can't do the calculation, so we return no highlight
         if sample_spike.empty or control_spike.empty or control_match.empty:
             return [""] * len(row)

@@ -3,3 +3,4 @@ spike_species = [
     "Imtechella halotolerans",
     "Allobacillus halotolerans"
 ]
+normalising_spike_species = "Imtechella halotolerans"
