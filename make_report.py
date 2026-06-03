@@ -389,7 +389,7 @@ def calculate_align_stats(query_len,
     mismatches = 0
     if edit_distance is not None:
         mismatches = edit_distance - insertions - deletions
-        matches = query_alignment_len - deletions - mismatches
+        matches = query_alignment_len - insertions - mismatches
 
     # We can not normalize over query or reference length, as these
     # won't contain either insertions or deletions
