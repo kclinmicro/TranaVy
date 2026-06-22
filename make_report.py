@@ -44,7 +44,7 @@ def main():
     # Load neg control abundance table
     neg_control_abundance = pd.read_csv(f"{args.input_dir}/results/{args.neg_control}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
-    neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [13]]
+    neg_control_filtered = neg_control_abundance.iloc[:, list(range(5)) + [9]]
     # Move the first column (taxid)
     neg_control_switched = neg_control_filtered[neg_control_filtered.columns[1:5]
         .append(neg_control_filtered.columns[:1])
@@ -66,7 +66,7 @@ def main():
     # Load sample abundance table
     abundance = pd.read_csv(f"{args.input_dir}/results/{args.sample_name}_downsampled.fastq_rel-abundance.tsv", sep="\t")
     # Filter for wanted columns
-    abundance_filtered = abundance.iloc[:, list(range(5)) + [13]]
+    abundance_filtered = abundance.iloc[:, list(range(5)) + [9]]
     # Move the first column (taxid)
     abundance_switched = abundance_filtered[abundance_filtered.columns[1:5]
         .append(abundance_filtered.columns[:1])
