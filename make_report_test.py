@@ -81,11 +81,11 @@ def test_get_align_stats():
             "want_cov": 0.7,
         },
         {
-            # Diffs:                       |                                          |
-            #                              v                                          v
-            "qry": "-----TAGAGGCGGCTGCGCGTAGTGCTGCTGATTATATTTCGGCGCTATATCGCTGATGATCGTC-ATACGTACTGCTAGCTAGCTGCA----------".replace("-", ""),
+            # Diffs:                       |                      |                   |
+            #                              v                      v                   v
+            "qry": "-----TAGAGGCGGCTGCGCGTAGTGCTGCTGATTATATTTCGGCGGTATATCGCTGATGATCGTC-ATACGTACTGCTAGCTAGCTGCA----------".replace("-", ""),
             "ref": "CGGCTTAGAGGCGGCTGCGCGTA-TGCTGCTGATTATATTTCGGCGCTATATCGCTGATGATCGTCGATACGTACTGCTAGCTAGCTGCATCTGATCGTC".replace("-", ""),
-            "want_id": (85-2)/85,
+            "want_id": (85-3)/85,
             # The -1 are becase we have to subtract any bases missing in the
             # reference, for the coverage calculation
             "want_cov": (85-1)/(100-1),
