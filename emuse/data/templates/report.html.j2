@@ -44,8 +44,12 @@
       <div class="w-2/5">
         <table class="overflow-x-auto">
           <tbody>
+              <tr class="bg-white">
+                  <td class="font-semibold">Number of reads before filtering</td>
+                  <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_unprocessed"]["Number of reads_fastq"]| round(0) | int }}</td>
+              </tr>
               <tr class="bg-slate-50">
-                  <td class="font-semibold">Number of reads before downsampling</td>
+                  <td class="font-semibold">Number of reads after filtering*</td>
                   <td>{{ multiqc_data["report_general_stats_data"][0][sample_name ~ "_nanoplot_processed"]["Number of reads_fastq"]| round(0) | int }}</td>
               </tr>
               <tr class="bg-white">
@@ -102,8 +106,11 @@
               </tr>
           </tbody>
         </table>
+        <p class="text-sm text-gray-600 mb-2" style="margin-top: -6px;">
+          * Includes downsampling when performed.
+        </p>
       </div>
-
+      
       <div class="mx-auto w-2/5 p-4 text-sm text-center">
         <h3 class="font-semibold mb-2">Phred Quality Score (Q)</h3>
 
