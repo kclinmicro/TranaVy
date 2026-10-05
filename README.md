@@ -123,10 +123,9 @@ contains:
 
 #### Summary Statistics
 
-Key sequencing metrics, including number of reads (before downsampling),
+Key sequencing metrics, including number of reads before and after filtering (including downsampling),
 mean/median read length and read quality (Phred score), read length N50,
-standard deviation (STDEV) of read lengths, total bases and number of mapped
-reads.
+standard deviation (STDEV) of read lengths, and total bases.
 
 #### Sample Abundance Table
 
