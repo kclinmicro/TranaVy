@@ -13,6 +13,7 @@ import tomllib
 
 # Bundled package data (templates, CSS, taxonomy mapping, default config)
 DATA_DIR = resources.files("emuse") / "data"
+DEFAULT_CONFIG = DATA_DIR / "configs" / "config.toml"
 
 def main():
     argp = argparse.ArgumentParser()
@@ -20,13 +21,11 @@ def main():
     argp.add_argument("-o", "--output-file", type=str, required=True, help="Path to the output report file")
     argp.add_argument("-s", "--sample-name", type=str, required=True, help="Name of the sample")
     argp.add_argument("-n", "--neg-control", type=str, required=True, help="Name of the negative control")
-    argp.add_argument("-c", "--config", type=str, default="configs/config.toml", help="Path to config file. Default is configs/config.toml")
+    argp.add_argument("-c", "--config", type=Path, default=DEFAULT_CONFIG, help="Path to config file. Default is the bundled config.toml")
     argp.add_argument("-p", "--prob-score", action="store_true", help="Include probability score in the report")
     argp.add_argument("-m", "--alignment-metrics", action="store_true", help="Include metrics based on the raw alignment of reads to the database (percent identity and percent coverage)")
 
     args = argp.parse_args()
-    if args.config is None:
-        args.config = str(DATA_DIR / "configs" / "config.toml")
 
     # Read CSS file content
     with open(DATA_DIR / "static" / "style.css", "r") as f:
