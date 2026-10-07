@@ -96,7 +96,7 @@ emuse \
 | `--output-file`       | `-o`  | Yes      | Name of the output html report to be generated                                                              |
 | `--sample-name`       | `-s`  | Yes      | Name of the sample to generate the report for                                                               |
 | `--neg-control`       | `-n`  | Yes      | Name of the negative control sample                                                                         |
-| `--config`            | `-c`  | No       | Path to configuration file (default: `config.toml`)                                                         |
+| `--config`            | `-c`  | No       | Path to configuration file (default: the bundled default `emuse/data/configs/config.toml`)                                                         |
 | `--prob-score`        | `-p`  | No       | Include the generation and addition of probability scores in the report                                     |
 | `--alignment-metrics` | `-m`  | No       | Include metrics based on the raw alignment of reads to the database (percent identity and percent coverage) |
 
