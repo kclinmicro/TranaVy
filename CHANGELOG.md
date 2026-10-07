@@ -17,31 +17,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Documented plans to support generating reports directly from raw Emu
-  output, not just from a TRANA pipeline run (see the README "Roadmap"
-  section) ([#15](https://github.com/kclinmicro/emuse/pull/15)).
+- [#15](https://github.com/kclinmicro/emuse/pull/15) Documented plans to
+  support generating reports directly from raw Emu output, not just from a
+  TRANA pipeline run (see the README "Roadmap" section) (by @samuell).
 
 ### Changed
 
-- Restructured the project into an installable `emuse` Python package to
-  prepare for packaging as a bioconda recipe ([#15](https://github.com/kclinmicro/emuse/pull/15), [#17](https://github.com/kclinmicro/emuse/pull/17)):
+- [#15](https://github.com/kclinmicro/emuse/pull/15)/[#17](https://github.com/kclinmicro/emuse/pull/17)
+  Restructured the project into an installable `emuse` Python package to
+  prepare for packaging as a bioconda recipe (by @samuell):
   - Moved `make_report.py`, `templates/`, `static/`, `configs/`, and
     `taxonomy.tsv` into `emuse/` (bundled under `emuse/data/`).
   - Moved `make_report_test.py` to `tests/test_make_report.py`.
   - Added an `emuse` console script entry point.
   - Renamed the distribution/CLI name from `16s-report`/`make_report.py` to
     `emuse`.
-- `pyproject.toml` now declares a proper `[build-system]`, package data, and
-  MIT license metadata ([#17](https://github.com/kclinmicro/emuse/pull/17)).
+- [#17](https://github.com/kclinmicro/emuse/pull/17) `pyproject.toml` now
+  declares a proper `[build-system]`, package data, and MIT license
+  metadata (by @samuell).
 
 ### Added
 
-- `LICENSE` (MIT) ([#17](https://github.com/kclinmicro/emuse/pull/17)).
-- `MANIFEST.in` for sdist packaging ([#17](https://github.com/kclinmicro/emuse/pull/17)).
-- Draft bioconda recipe at `recipe/meta.yaml` ([#17](https://github.com/kclinmicro/emuse/pull/17)).
-- `THIRD_PARTY_LICENSES.txt` and a README "Acknowledgements" section crediting
-  [Emu](https://github.com/treangenlab/emu) (MIT licensed), whose output this
-  project parses and reports on ([#15](https://github.com/kclinmicro/emuse/pull/15), [#17](https://github.com/kclinmicro/emuse/pull/17)).
+- [#17](https://github.com/kclinmicro/emuse/pull/17) Added `LICENSE` (MIT)
+  (by @samuell).
+- [#17](https://github.com/kclinmicro/emuse/pull/17) Added `MANIFEST.in` for
+  sdist packaging (by @samuell).
+- [#17](https://github.com/kclinmicro/emuse/pull/17) Added a draft bioconda
+  recipe at `recipe/meta.yaml` (by @samuell).
+- [#15](https://github.com/kclinmicro/emuse/pull/15)/[#17](https://github.com/kclinmicro/emuse/pull/17)
+  Added `THIRD_PARTY_LICENSES.txt` and a README "Acknowledgements" section
+  crediting [Emu](https://github.com/treangenlab/emu) (MIT licensed), whose
+  output this project parses and reports on (by @samuell).
 
 ## [1.0.0]
 
@@ -50,23 +56,34 @@ profiling pipeline.
 
 ### Added
 
-- HTML report generator that turns Emu/TRANA abundance and read-assignment
-  output into a self-contained, styled report ([#1](https://github.com/kclinmicro/emuse/pull/1)).
-- `--output_file` CLI parameter to control where the generated report is
-  written ([#2](https://github.com/kclinmicro/emuse/pull/2)).
-- Alignment-based metrics (percent identity and coverage) computed from
-  Emu's alignment output ([#3](https://github.com/kclinmicro/emuse/pull/3)).
-- Refined assignment metrics and a customizable negative control table in
-  the report ([#4](https://github.com/kclinmicro/emuse/pull/4), [#5](https://github.com/kclinmicro/emuse/pull/5)).
-- Normalised abundance calculation relative to a spike species, with the
-  spike species later made configurable via `config.toml` instead of being
-  hardcoded ([#8](https://github.com/kclinmicro/emuse/pull/8), [#9](https://github.com/kclinmicro/emuse/pull/9)).
-- Test suite with fixtures based on realistic sequences ([#6](https://github.com/kclinmicro/emuse/pull/6)).
+- [#1](https://github.com/kclinmicro/emuse/pull/1) Added the HTML report
+  generator that turns Emu/TRANA abundance and read-assignment output into
+  a self-contained, styled report (by @AnnaNoren).
+- [#2](https://github.com/kclinmicro/emuse/pull/2) Added a `--output_file`
+  CLI parameter to control where the generated report is written
+  (by @samuell).
+- [#3](https://github.com/kclinmicro/emuse/pull/3) Added alignment-based
+  metrics (percent identity and coverage) computed from Emu's alignment
+  output (by @samuell).
+- [#4](https://github.com/kclinmicro/emuse/pull/4)/[#5](https://github.com/kclinmicro/emuse/pull/5)
+  Refined assignment metrics and added a customizable negative control
+  table in the report (by @samuell, @AnnaNoren).
+- [#8](https://github.com/kclinmicro/emuse/pull/8)/[#9](https://github.com/kclinmicro/emuse/pull/9)
+  Added normalised abundance calculation relative to a spike species, with
+  the spike species later made configurable via `config.toml` instead of
+  being hardcoded (by @AnnaNoren).
+- [#6](https://github.com/kclinmicro/emuse/pull/6) Added a test suite with
+  fixtures based on realistic sequences (by @samuell).
 
 ### Fixed
 
-- Removed insertions (instead of deletions) from the `query_alignment_length`
-  calculation, which had skewed coverage figures ([#10](https://github.com/kclinmicro/emuse/issues/10), [#11](https://github.com/kclinmicro/emuse/pull/11)).
-- Report layout now adapts its dimensions to the browser window instead of
-  using a fixed size ([#13](https://github.com/kclinmicro/emuse/issues/13), [#14](https://github.com/kclinmicro/emuse/pull/14)).
+- [#10](https://github.com/kclinmicro/emuse/issues/10)/[#11](https://github.com/kclinmicro/emuse/pull/11)
+  Removed insertions (instead of deletions) from the
+  `query_alignment_length` calculation, which had skewed coverage figures
+  (by @samuell).
+- [#13](https://github.com/kclinmicro/emuse/issues/13)/[#14](https://github.com/kclinmicro/emuse/pull/14)
+  Report layout now adapts its dimensions to the browser window instead of
+  using a fixed size (by @AnnaNoren).
+
+
 
